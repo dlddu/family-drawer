@@ -6,10 +6,10 @@
 |---|---|
 | 여정 식별자 | `JRN-recipe-link-collect` |
 | 여정명 | 유튜브에서 받은 레시피를 모으고 다시 열기 |
-| 상태 | 초안 (v0.1) |
+| 상태 | 초안 (v0.2) |
 | 담당자 | 미지정 |
 | 최종 수정일 | 2026-11-25 |
-| 달성 가치 | `VAL-three-tap-keep` · `VAL-findable-later` · `VAL-says-what-it-did` · `VAL-family-not-solo` |
+| 달성 가치 | `VAL-least-effort` (①-1·①-3·①-4·①-5) · `VAL-obvious-to-everyone` (②-1·②-4·②-5·②-6) · `VAL-diagnosable-without-the-user` (③-A1~③-A4) |
 | 연결 문서 | PRD [`family-app-gym-recipes-prd-recipe-links.md`](../product/family-app-gym-recipes-prd-recipe-links.md) · 테스트 [`family-app-gym-recipes-test-recipe-links.md`](../product/family-app-gym-recipes-test-recipe-links.md) · mockup `JRN-recipe-link-collect` |
 
 ## 1. 서비스 개요 (참고)
@@ -106,7 +106,7 @@
 | 지표 | 정의 | 목표 |
 |---|---|---|
 | 공유 저장 성공률 (여정 성공) | 저장 완료된 공유 수신 / 전체 공유 수신 | TBD |
-| 저장 탭 수 | 공유 수신부터 저장 완료까지의 탭 수 중위값 | 3회 이하 (`VAL-three-tap-keep`) |
+| 저장 탭 수 | 공유 수신부터 저장 완료까지의 탭 수 중위값 | 3회 이하 (`VAL-least-effort` ①-1) |
 | 다시 열기율 (여정 가치 회수) | `원본 보기` 가 1회 이상 발생한 항목 / 저장된 전체 항목 | TBD |
 | 중복 생성률 | 같은 videoId 로 생성된 중복 항목 / 전체 항목 | 0% (AC-R3 가 보장해야 함) |
 | 제목 없음 비율 | 제목이 비어 있는 항목 / 전체 항목 | TBD (D-05 결정에 따라 달라짐) |
@@ -117,3 +117,4 @@
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |---|---|---|---|
 | v0.1 | 2026-11-25 | 최초 작성. 5단계, 분기 11건. 공유 payload 가 "제목+URL" 문자열일 수 있다는 가정 반영 | Claude (Opus 5) 세션 |
+| v0.2 | 2026-11-25 | 가치 문서 v0.2 에 맞춰 `달성 가치` 와 탭 수 지표 참조를 새 ID 로 교체. **단계 식별자·순서·분기는 변경 없음** | Claude (Opus 5) 세션 |

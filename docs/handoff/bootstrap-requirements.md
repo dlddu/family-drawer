@@ -59,7 +59,7 @@ python3 <skill-bundle>/journey-mockup-builder/scripts/check_mockup.py \
 | 사용자에게 보일 문구 | 레시피 PRD §5 피드백 문구표 (10행, 글자 그대로 쓸 것) |
 | 링크 파싱 규칙과 기대값 | 레시피 PRD §4 + 테스트 TC-R2 (12행) · TC-R4 (7행) — **그대로 단위 테스트로 옮길 수 있다** |
 | 공식 URL 형태 | `https://www.best.or.kr/fmcs/271?center=<센터코드>` (확인된 코드: 부천체육관 `BCS03`, 소사국민체육센터 `BCS01`) |
-| 하지 말아야 할 것 | 가치 문서 「범위 밖」 표 + `VAL-official-path-only` |
+| 하지 말아야 할 것 | 가치 문서 「범위 밖」 표 + 제약 `①-C1`(공식 경로 대체 금지) · `③-C1`(자격증명·가족 개인 콘텐츠를 진단에 넣지 않음) |
 
 ## 4. 화면 인벤토리 (mockup `data-screen` → 구현 라우트 후보)
 

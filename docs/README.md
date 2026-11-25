@@ -17,7 +17,7 @@
 | # | 문서 | 무엇이 들어 있나 |
 |---|---|---|
 | 1 | [`research/facility-and-link-findings.md`](./research/facility-and-link-findings.md) | 사실 근거. 시설·인증·공식 예약 경로·자동화 가능 범위, YouTube 링크 형태. **확인/가정 구분 + 출처 URL + 확인일** |
-| 2 | [`product/family-app-gym-recipes-values.md`](./product/family-app-gym-recipes-values.md) | **최상위 문서.** 제품 목표·범위(안/밖)·가치 6개·가족 역할 정의 |
+| 2 | [`product/family-app-gym-recipes-values.md`](./product/family-app-gym-recipes-values.md) | **최상위 문서.** 제품 목표·범위(안/밖)·**최상위 가치 3개**(편의성·직관적 UX·사용자 조작 없는 진단)와 하위 기준·제약, 가족 역할 정의 |
 | 3 | [`user-journeys/JRN-gym-reservation.md`](./user-journeys/JRN-gym-reservation.md) | 여정 ① 헬스 수강신청 (6단계, 분기 9건) |
 | 4 | [`user-journeys/JRN-recipe-link-collect.md`](./user-journeys/JRN-recipe-link-collect.md) | 여정 ② 레시피 링크 모으기 (5단계, 분기 11건) |
 | 5 | [`product/family-app-gym-recipes-prd-gym-reservation.md`](./product/family-app-gym-recipes-prd-gym-reservation.md) | PRD ① + AC-G1~G10 (테스트 가능한 수용 기준) |
@@ -55,7 +55,8 @@
               └─► 테스트 (TC-G*/TC-R*)    ← 테스트는 AC 를 검증한다
 ```
 
-현재 끊어진 화살표는 **없다**. 다만 가치 소유자가 미지정이라 "고아 가치" 위험이 열려 있다 (D-08).
+현재 끊어진 화살표는 **없다**. 다만 ① 가치 소유자가 미지정이라 "고아 가치" 위험이 열려 있고(D-08),
+② 가치 ③의 **B군 하위 기준**(상관 ID·오류율·반복 실패 감지)은 1단계 PRD 에 AC 가 없다 — 둘 다 상태 추적 문서에 기록돼 있다.
 
 ## 핵심 설계 결정 두 가지
 
