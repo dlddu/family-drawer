@@ -65,8 +65,9 @@ python3 scripts/update_docs_checksums.py           # 다르면 manifest 재생�
 # 그 옆 이력 주석에 근거(PR·커밋)를 한 줄 남긴다 — 과거 값은 감사용으로 지우지 않는다.
 ```
 
-현재 고정 근거: manifest `e99fb061…14bffe` = docs 커밋 `62394e17`(PR #1 head, 최상위 가치 3개 재정의).
-이전 근거 `0f168cef…6e476`(docs 커밋 `5c977db4`, 최초 인계)는 이력에만 남아 있고 **현재 참조가 아니다.**
+현재 고정 근거: manifest `e474704f…a4a6b1` = docs 커밋 `2b50bd2a`(PR #1 최종 head, **최종 문서 리비전**).
+이전 근거 `0f168cef…6e476`(docs `5c977db4`, 최초 인계)와 `e99fb061…14bffe`(docs `62394e17`, 가치 3개 재정의)는
+이력에만 남아 있고 **현재 참조가 아니다** — 이력은 `scripts/verify_docs.py` 주석에 그대로 있다.
 
 ## 아직 정하지 않은 것 (추측하지 않는다)
 

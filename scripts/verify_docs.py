@@ -40,8 +40,11 @@ DOCS = REPO / "docs"
 #   0f168cef944e0fb1ee4503a43243353f8eeee1b9e508e596d7dc49bb6876e476
 #       docs 커밋 5c977db4 (1단계 최초 인계, 2026-11-25) — 현재 참조 아님
 #   e99fb06169ee81cc2c4481ad31df73cf21bad0242bc28040edf6d1647614bffe
-#       docs 커밋 62394e17 = PR #1 head (가치 3개 재정의, 2026-11-25) — **현재 참조**
-HANDOFF_CHECKSUMS_SHA256 = "e99fb06169ee81cc2c4481ad31df73cf21bad0242bc28040edf6d1647614bffe"
+#       docs 커밋 62394e17 (가치 3개 재정의, 2026-11-25) — 현재 참조 아님
+#   e474704f00f0a7b4648934573eb0fda53bd86fda92c786135791852925a4a6b1
+#       docs 커밋 2b50bd2a = PR #1 최종 head (①편의성 최우선 정리 + ③ 검증 기대 결과 연결,
+#       2026-11-25, **최종 문서 리비전**) — **현재 참조**
+HANDOFF_CHECKSUMS_SHA256 = "e474704f00f0a7b4648934573eb0fda53bd86fda92c786135791852925a4a6b1"
 CHECKSUMS = DOCS / "handoff" / "checksums.txt"
 
 # manifest 범위 밖인 부트스트랩 소유 문서. docs 담당의 manifest 는 1단계 문서 17개를
