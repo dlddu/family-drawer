@@ -2,6 +2,7 @@
 
 > 작성 2026-11-25 · devops 세션 산출물 · 선행 문서 [`bootstrap-requirements.md`](./bootstrap-requirements.md)
 > **이 문서는 "저장소에 무엇을 깔았고, 무엇을 일부러 깔지 않았는지"를 적는다.** 앱 코드는 여전히 없다.
+> 검증 이력은 과거 기록을 지우지 않고 쌓는다(감사용). **현재 고정 근거는 §1-b 에 있다.**
 
 ---
 
@@ -14,21 +15,45 @@
 | 기본 브랜치 | `main` | 일치 |
 | 가시성 | public | — (mockup 공개 여부는 D-10 미결) |
 
-1단계 문서 커밋 `5c977db46cfd735ae0f1ef303def20a847879bba` 는 브랜치
-`docs/phase-1-product-docs` 의 끝이고, **기본 브랜치 `main`(`86e749b`, "Initial commit")의 직계 자식**이다
-(ahead 1 · behind 0 · merge-base = main). 문서 전용 PR 은 열려 있지 않았다 — 그래서 이 문서 커밋을
-2단계 작업 브랜치에 그대로 담아 한 번에 검토한다.
+문서 브랜치 `docs/phase-1-product-docs` 는 **PR #1(docs 담당 소유)** 의 head 이고 base 는 `main` 이다.
+부트스트랩 PR #2 의 base 도 `main` 이며, 문서 내용의 소유권은 PR #1 에 남는다 — 이 세션은 문서
+파일을 고치지 않고, 검증의 **고정 근거만** 문서 쪽 manifest 에 맞춘다.
 
-## 1. 전송 검증 (지정 SHA 기준)
+## 1-a. 1차 검증 — docs 커밋 `5c977db4` (2026-11-25, 과거 기록 · 현재 참조 아님)
 
 `docs/handoff/checksums.txt` 자체 SHA-256 이
 `0f168cef944e0fb1ee4503a43243353f8eeee1b9e508e596d7dc49bb6876e476` 로 일치하고,
 목록의 16개 파일 해시가 전부 일치했다(`sha256sum -c` 16/16 OK). 목록 16개 + 목록 파일 자신 =
-**17개**이며, 이는 그 커밋이 추가한 파일 집합과 정확히 같다(차집합 0).
+**17개**이며, 이는 그 커밋이 추가한 파일 집합과 정확히 같았다(차집합 0). 당시 `5c977db4` 는
+`main`(`86e749b`)의 직계 자식(ahead 1 · behind 0)이었고 문서 전용 PR 은 아직 열려 있지 않았다.
 
-이 검증은 1회성으로 끝내지 않고 CI 에 넣었다 — `scripts/verify_docs.py handoff` 가 같은
-17개를 매 PR 에서 다시 확인한다. 체크섬 목록만 고쳐 넘어가는 것을 막기 위해 목록 파일 자체의
-해시를 검증기 상수로 못박았다.
+## 1-b. 현재 검증 — docs 커밋 `62394e17` = PR #1 head (최상위 가치 3개 재정의)
+
+PR #1 에 사용자의 신규 세 가치가 반영되어 문서 브랜치가 `5c977db4` → `62394e17` 로 올라갔다
+(문서 11개 변경, 추가·삭제된 파일 없음). docs 담당이 같은 커밋에서 manifest 를 재생성해 두었고,
+원격에서 그 커밋을 그대로 꺼내 확인했다.
+
+| 확인 | 결과 |
+|---|---|
+| `docs/` 파일 수 | 17개 (파일 집합 변화 없음) |
+| manifest 목록 | 16줄, 목록 파일 집합 = `docs/` 실제 집합(자신 제외)과 차집합 0 |
+| 목록 해시 | `sha256sum -c` **16/16 OK** |
+| manifest 자체 SHA-256 | `e99fb06169ee81cc2c4481ad31df73cf21bad0242bc28040edf6d1647614bffe` |
+
+그래서 이 브랜치는 `62394e17` 을 **강제 push 없이 정상 병합**하고, `verify_docs.py` 의
+`HANDOFF_CHECKSUMS_SHA256` 을 위 값으로 갱신했다(이전 값은 이력 주석에 남긴다).
+`update_docs_checksums.py --check` 가 "manifest = 현재 docs/" 를 확인하므로 **재생성은 하지 않았다**
+— 문서와 manifest 는 docs 담당 소유다.
+
+검증은 1회성으로 끝내지 않고 CI 에 있다 — `scripts/verify_docs.py handoff` 가 매 PR 에서 같은
+17개를 다시 확인한다. 목록만 고쳐 넘어가는 변조는 manifest 자체 해시를 검증기 상수로 못박아 막는다.
+
+### 소유 경계
+
+manifest 는 docs 담당 소유다. 부트스트랩이 더한 문서(이 파일)는
+`verify_docs.BOOTSTRAP_OWNED` 로 선언해 manifest 범위에서 제외했다 — 그래서 부트스트랩이 문서를
+더해도 docs 담당의 고정 해시가 흔들리지 않고, `update_docs_checksums.py --check` 는 "문서가
+바뀌었나"만 답한다.
 
 ## 2. 이번에 깐 것
 
@@ -37,18 +62,20 @@
 | `.github/workflows/pr.yml` | PR 단일 필수 체크 `pr-gate` 오케스트레이터 | 스택과 무관. 게이트 이름·`if: always()` + `toJSON(needs)` 판정은 `k3s-app-bootstrap` 규약 그대로 |
 | `.github/workflows/checks.yml` | `handoff` · `docs` · `mockups` 세 job (`workflow_call`, head SHA 체크아웃) | 검사 대상이 문서뿐이라 플랫폼 중립 |
 | `scripts/verify_docs.py` | 표준 라이브러리만 쓰는 문서 검증기 | 설치 의존성 0 |
-| `scripts/update_docs_checksums.py` | 문서를 의도적으로 고칠 때 쓰는 체크섬 재생성기 | — |
+| `scripts/update_docs_checksums.py` | 문서를 의도적으로 고칠 때 쓰는 manifest 재생성기(`--check` 로 정합만 확인 가능, 부트스트랩 소유 문서는 제외) | — |
 | `README.md` | 저장소 색인(문서 지도 · 검증 방법 · 미결정 · 범위 밖) | 기존 1줄 제목을 보존한 채 확장 |
 | `CLAUDE.md` | 뒤 세션용 저장소 지침(제약을 이어받게) | — |
 | `.gitignore` · `.gitattributes` · `.editorconfig` | OS·편집기 산출물 제외, 줄바꿈 LF 고정 | 스택 항목은 비워 둠 |
 
-`docs/` 아래 1단계 산출물 17개는 **한 바이트도 고치지 않았다.** 이 문서만 새로 더했다.
+`docs/` 아래 1단계 산출물 17개(manifest 포함)는 **부트스트랩이 한 바이트도 고치지 않았다** —
+현재 내용은 PR #1 의 docs 커밋 `62394e17` 그대로이고, 이 브랜치가 더한 `docs/` 파일은 이 문서
+하나다. 검증기의 `handoff` 모드가 그 사실을 매 PR 에서 다시 증명한다.
 
 ### 검증기가 보는 것
 
 | 모드 | 검사 |
 |---|---|
-| `handoff` | 목록 파일 자체 해시 + 16개 파일 해시 + 목록에 없는 추가 문서 안내 |
+| `handoff` | manifest 자체 해시(고정 근거) + 목록 16개 파일 해시 + 부트스트랩 소유·manifest 밖 문서 안내 |
 | `links` | 문서 간 상대 링크가 실제 파일을 가리키는지, 어느 문서에서도 닿지 않는 고립 문서가 없는지 |
 | `mockups` | mockup `data-step` 이 여정 문서의 `STP-*` 와 순서까지 일치, `data-go` 전이 대상(단계/상태) 존재, 단계 안 `data-state` 중복 없음, 외부 자원 참조 0건, `docs/journeys/index.md` 등재 |
 

@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.sha }}
-      - name: 1단계 인계 산출물 17개가 인계 시점과 같은지
+      - name: 문서 manifest(1단계 문서 17개)가 고정 근거와 같은지
         run: python3 scripts/verify_docs.py handoff
 
   docs:

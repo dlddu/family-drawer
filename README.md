@@ -40,7 +40,7 @@ scripts/           문서 검증기(표준 라이브러리만)
 
 ```bash
 python3 scripts/verify_docs.py            # 전부
-python3 scripts/verify_docs.py handoff    # 1단계 산출물 17개가 인계 시점과 같은지
+python3 scripts/verify_docs.py handoff    # 문서 manifest(17개)가 고정 근거와 같은지
 python3 scripts/verify_docs.py links      # 문서 간 링크 · 고립 문서
 python3 scripts/verify_docs.py mockups    # mockup 단계·상태가 여정 문서와 맞는지
 ```
@@ -49,12 +49,24 @@ PR 에서는 같은 검사가 `checks / handoff · docs · mockups` 로 돌고, 
 체크는 그것들을 모은 **`pr-gate` 하나**다. 체크를 더 붙일 때는 job 을 만들고
 `.github/workflows/pr.yml` 의 `pr-gate.needs` 에 넣는다 — 브랜치 보호 설정은 건드리지 않는다.
 
-1단계 문서를 **의도적으로** 고쳤다면:
+### 문서 manifest 와 소유 경계
+
+`docs/handoff/checksums.txt` 가 문서 manifest(1단계 문서 17개)이고, 그 파일 **자체의 SHA-256** 을
+`scripts/verify_docs.py` 의 `HANDOFF_CHECKSUMS_SHA256` 이 고정 근거로 들고 있다 — 목록만 고치고
+파일을 함께 고치는 변조가 막힌다. manifest 와 그 안의 문서는 **docs 담당 소유**이고, 부트스트랩이
+더한 문서(`verify_docs.BOOTSTRAP_OWNED`)는 manifest 범위 밖이다.
+
+문서를 **의도적으로** 고쳤다면:
 
 ```bash
-python3 scripts/update_docs_checksums.py   # docs/handoff/checksums.txt 재생성
-# 출력된 새 SHA-256 을 scripts/verify_docs.py 의 HANDOFF_CHECKSUMS_SHA256 에 옮겨 적는다
+python3 scripts/update_docs_checksums.py --check   # 먼저 정합 여부만 본다(쓰지 않는다)
+python3 scripts/update_docs_checksums.py           # 다르면 manifest 재생성
+# 출력된 SHA-256 을 scripts/verify_docs.py 의 HANDOFF_CHECKSUMS_SHA256 에 옮겨 적고,
+# 그 옆 이력 주석에 근거(PR·커밋)를 한 줄 남긴다 — 과거 값은 감사용으로 지우지 않는다.
 ```
+
+현재 고정 근거: manifest `e99fb061…14bffe` = docs 커밋 `62394e17`(PR #1 head, 최상위 가치 3개 재정의).
+이전 근거 `0f168cef…6e476`(docs 커밋 `5c977db4`, 최초 인계)는 이력에만 남아 있고 **현재 참조가 아니다.**
 
 ## 아직 정하지 않은 것 (추측하지 않는다)
 

@@ -5,7 +5,7 @@
 (`docs/decisions/open-questions.md` D-02·D-03) 그때 unit·e2e 검사가 별도로 붙는다.
 
 모드:
-  handoff   인계 체크섬(`docs/handoff/checksums.txt`)과 그 파일 자체의 고정 해시
+  handoff   문서 manifest(`docs/handoff/checksums.txt`)의 목록 해시 + manifest 자체의 고정 근거
   links     문서 간 상대 링크가 실제 파일을 가리키는지 + 고립 문서 없는지
   mockups   여정 mockup 과 여정 문서의 단계 일치, 분기 상태 참조, 외부 의존 0건
   all       위 전부 (기본값)
@@ -27,12 +27,28 @@ REPO = Path(__file__).resolve().parent.parent
 DOCS = REPO / "docs"
 
 # ── 고정 상수 ────────────────────────────────────────────────────────────────
-# 1단계 인계 시점에 확인된 `docs/handoff/checksums.txt` 자체의 SHA-256.
-# 이 값이 맞아야 "그 체크섬 목록이 그 목록"임이 보장된다(목록만 고치고 파일을
-# 함께 고치는 변조를 막는다). 1단계 문서를 의도적으로 고칠 때는 checksums.txt 를
-# 다시 만들고(`scripts/update_docs_checksums.py`) 이 값을 함께 갱신한다.
-HANDOFF_CHECKSUMS_SHA256 = "0f168cef944e0fb1ee4503a43243353f8eeee1b9e508e596d7dc49bb6876e476"
+# `docs/handoff/checksums.txt`(문서 manifest) 자체의 SHA-256. 이 값이 맞아야
+# "그 체크섬 목록이 그 목록"임이 보장된다 — 목록만 고치고 파일을 함께 고치는
+# 변조를 막는다. manifest 와 그 안의 문서는 docs 담당 소유이고, 이 상수는
+# 부트스트랩이 "어느 manifest 를 검증 근거로 삼는지" 선언하는 자리다.
+#
+# 갱신 절차(문서를 의도적으로 고쳤을 때):
+#   1) docs 담당이 문서를 고치고 `python3 scripts/update_docs_checksums.py` 로 manifest 재생성
+#   2) 출력된 SHA-256 을 아래 값으로 옮겨 적고, 근거(PR·커밋)를 이력에 한 줄 남긴다
+#
+# 고정 근거 이력 (감사용 — 지우지 않는다):
+#   0f168cef944e0fb1ee4503a43243353f8eeee1b9e508e596d7dc49bb6876e476
+#       docs 커밋 5c977db4 (1단계 최초 인계, 2026-11-25) — 현재 참조 아님
+#   e99fb06169ee81cc2c4481ad31df73cf21bad0242bc28040edf6d1647614bffe
+#       docs 커밋 62394e17 = PR #1 head (가치 3개 재정의, 2026-11-25) — **현재 참조**
+HANDOFF_CHECKSUMS_SHA256 = "e99fb06169ee81cc2c4481ad31df73cf21bad0242bc28040edf6d1647614bffe"
 CHECKSUMS = DOCS / "handoff" / "checksums.txt"
+
+# manifest 범위 밖인 부트스트랩 소유 문서. docs 담당의 manifest 는 1단계 문서 17개를
+# 덮고, 여기 적힌 파일은 그 목록에 들어가지 않는다 — 그래서 manifest 재생성
+# (`update_docs_checksums.py`)도 이 파일을 건너뛴다. 소유 경계를 코드로 못박아,
+# 부트스트랩이 문서를 더해도 docs 담당의 고정 해시가 흔들리지 않게 한다.
+BOOTSTRAP_OWNED = {"docs/handoff/phase-2-bootstrap.md"}
 
 # 인계 문서 §7 이 "아직 없다"고 적어 둔 자리. `design-doc-structure-validator`
 # 스킬이 형식을 정하는 파일이라 이 세션에서 임의로 만들지 않았다. 링크가 이들을
@@ -100,13 +116,14 @@ def check_handoff() -> None:
 
     actual = sha256(CHECKSUMS)
     if actual == HANDOFF_CHECKSUMS_SHA256:
-        ok(f"{rel(CHECKSUMS)} 자체 해시가 고정값과 일치")
+        ok(f"{rel(CHECKSUMS)} 자체 해시가 고정 근거와 일치")
     else:
-        fail(f"{rel(CHECKSUMS)} 자체 해시 불일치\n"
+        fail(f"{rel(CHECKSUMS)} 자체 해시 불일치 — 문서 manifest 가 고정 근거와 다르다\n"
              f"          기대 {HANDOFF_CHECKSUMS_SHA256}\n"
              f"          실제 {actual}\n"
-             f"          1단계 문서를 의도적으로 고쳤다면 scripts/update_docs_checksums.py 를 돌리고 "
-             f"verify_docs.py 의 HANDOFF_CHECKSUMS_SHA256 을 함께 갱신할 것")
+             f"          문서를 의도적으로 고쳤다면 scripts/update_docs_checksums.py 를 돌리고 "
+             f"verify_docs.py 의 HANDOFF_CHECKSUMS_SHA256 을 함께 갱신할 것"
+             f"(이력 주석에 근거 PR·커밋을 남긴다)")
 
     listed = 0
     for lineno, line in enumerate(CHECKSUMS.read_text(encoding="utf-8").splitlines(), 1):
@@ -121,9 +138,9 @@ def check_handoff() -> None:
         target = REPO / name
         listed += 1
         if not target.is_file():
-            fail(f"체크섬에 있는 {name} 파일이 없다")
+            fail(f"manifest 에 있는 {name} 파일이 없다")
         elif sha256(target) != want:
-            fail(f"{name} 내용이 인계 시점과 다르다")
+            fail(f"{name} 내용이 manifest 의 해시와 다르다")
     ok(f"목록 {listed}개 파일 + checksums.txt = {listed + 1}개 검증")
 
     covered = {"docs/handoff/checksums.txt"} | {
@@ -131,10 +148,15 @@ def check_handoff() -> None:
         for ln in CHECKSUMS.read_text(encoding="utf-8").splitlines()
         if ln.strip() and not ln.startswith("#") and len(ln.split(None, 1)) == 2
     }
-    extra = [rel(p) for p in doc_files() if rel(p) not in covered]
+    uncovered = [rel(p) for p in doc_files() if rel(p) not in covered]
+    owned = [n for n in uncovered if n in BOOTSTRAP_OWNED]
+    extra = [n for n in uncovered if n not in BOOTSTRAP_OWNED]
+    if owned:
+        print(f"  info  부트스트랩 소유 문서 {len(owned)}개(manifest 범위 밖, 설계대로): "
+              + ", ".join(owned))
     if extra:
-        print(f"  info  인계 체크섬 뒤에 추가된 문서 {len(extra)}개(검증 대상 아님): "
-              + ", ".join(extra))
+        print(f"  info  manifest 에 없는 문서 {len(extra)}개(검증 대상 아님 — docs 담당이 "
+              f"manifest 를 재생성하면 포함된다): " + ", ".join(extra))
 
 
 # ── links ───────────────────────────────────────────────────────────────────
