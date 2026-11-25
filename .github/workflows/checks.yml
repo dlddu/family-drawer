@@ -1,0 +1,58 @@
+# pr.yml 에서만 호출된다(단독 트리거 없음). 트리거와 단일 필수 체크(`pr-gate`)는 pr.yml 에 있다.
+#
+# `sha` 는 PR head SHA 다. PR 기본 체크아웃은 임시 머지 커밋이라, 검증 대상과 PR 화면에
+# 보이는 커밋이 어긋나지 않게 head SHA 를 명시해 체크아웃한다.
+#
+# job 을 쪼개 두는 이유: PR 화면에 `checks / docs (links·orphans)` 처럼 접두사가 붙어
+# 어느 칸이 깨졌는지 바로 보인다. job 을 더 더해도 pr.yml 은 고칠 필요가 없다 —
+# 이 파일의 job 이 모두 성공해야 `checks` 가 success 가 된다.
+name: Checks
+
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: 검증할 커밋(PR head SHA)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  handoff:
+    name: handoff (checksums)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+      - name: 1단계 인계 산출물 17개가 인계 시점과 같은지
+        run: python3 scripts/verify_docs.py handoff
+
+  docs:
+    name: docs (links·orphans)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+      - name: 문서 간 상대 링크와 고립 문서
+        run: python3 scripts/verify_docs.py links
+
+  mockups:
+    name: mockups (journey parity)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+      - name: mockup 단계·분기 상태가 여정 문서와 맞는지 · 외부 의존 0건
+        run: python3 scripts/verify_docs.py mockups
+
+  # TODO(phase-3): 앱 스택이 정해지면(D-02 지원 OS · D-03 인프라) lint·unit·e2e job 을
+  # 여기 추가한다. 지금은 통과만 하는 빈 job 을 두지 않는다 — PR 화면에서 "테스트 통과"로
+  # 잘못 읽히기 때문이다. 테스트할 코드가 아직 저장소에 없다.
