@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>부천도시공사 헬스 수강신청 제때 끝내기 — 여정 mockup</title>
+<style>
+  /* ── 1. 디자인 시스템 토큰 ─────────────────────────────
+     이 레포에는 디자인 시스템 문서가 아직 없다. 아래 값은 **임의 스타일**(무채색 최소)이며
+     디자인 시스템이 생기면 그 토큰을 가리키도록 바꿔야 한다. (보고의 "임시로 쓴 값" 참조) */
+  :root {
+    --jm-bg: #ffffff;
+    --jm-fg: #1a1a1a;
+    --jm-muted: #6b6b6b;
+    --jm-line: #d9d9d9;
+    --jm-accent: #1a1a1a;
+    --jm-radius: 8px;
+    --jm-gap: 12px;
+    --jm-font: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  }
+
+  /* ── 2. 셸(리뷰 도구) ── 제품 화면과 구분되게만 보이면 된다 */
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--jm-font); color: var(--jm-fg); background: #f2f2f2; }
+  .jm-bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: var(--jm-gap);
+            align-items: center; padding: 8px 16px; border-bottom: 1px dashed var(--jm-line);
+            background: var(--jm-bg); font-size: 13px; }
+  .jm-title code { color: var(--jm-muted); }
+  .jm-steps { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0; padding: 0; }
+  .jm-steps a { display: block; padding: 2px 8px; border: 1px solid var(--jm-line); border-radius: 999px;
+                color: var(--jm-muted); text-decoration: none; }
+  .jm-steps a[aria-current="step"] { border-color: var(--jm-accent); color: var(--jm-fg); font-weight: 600; }
+  .jm-pos { color: var(--jm-muted); }
+  .jm-nav { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+  .jm-nav button, .jm-nav a { font: inherit; padding: 4px 10px; border: 1px solid var(--jm-line);
+            border-radius: var(--jm-radius); background: none; color: var(--jm-fg); text-decoration: none; cursor: pointer; }
+  .jm-nav button:disabled { opacity: .4; cursor: default; }
+  .jm-screens { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+                list-style: none; margin: 0; padding: 0; color: var(--jm-muted); }
+  .jm-screens::before { content: "이 단계의 화면·상태:"; margin-right: 4px; }
+  .jm-screens a { display: block; padding: 1px 8px; border: 1px dotted var(--jm-line); border-radius: 999px;
+                  color: var(--jm-muted); text-decoration: none; }
+  .jm-screens a[aria-current="true"] { border-style: solid; border-color: var(--jm-accent); color: var(--jm-fg); }
+  .jm-note { flex-basis: 100%; color: var(--jm-muted); }
+  .jm-note:empty { display: none; }
+  .jm-end { margin: 16px auto; max-width: 390px; padding: 8px 12px; border: 1px dashed var(--jm-accent);
+            border-radius: var(--jm-radius); font-size: 13px; background: var(--jm-bg); }
+
+  /* ── 3. 단계 표시 ── 한 번에 한 단계만 보인다 */
+  main > section[data-step] { display: none; }
+  main > section[data-step].is-active { display: block; }
+
+  /* ── 4. 제품 화면 스타일 (임의 스타일) */
+  .screen { max-width: 390px; margin: 24px auto; background: var(--jm-bg); border: 1px solid var(--jm-line);
+            border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; min-height: 600px; }
+  .statusbar { height: 22px; display: flex; justify-content: space-between; align-items: center;
+               padding: 0 14px; font-size: 11px; color: var(--jm-muted); background: #fafafa; }
+  .apphdr { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--jm-line);
+            font-weight: 600; font-size: 15px; }
+  .apphdr .sp { margin-left: auto; display: flex; gap: 6px; }
+  .body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.5; }
+  .tabbar { display: flex; border-top: 1px solid var(--jm-line); }
+  .tabbar button { flex: 1; font: inherit; font-size: 11px; padding: 8px 0; background: none; border: none;
+                   color: var(--jm-muted); cursor: pointer; }
+  .tabbar button[aria-current="page"] { color: var(--jm-fg); font-weight: 700; }
+  .card { border: 1px solid var(--jm-line); border-radius: var(--jm-radius); padding: 12px; }
+  .label { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--jm-accent);
+           font-size: 11px; font-weight: 700; }
+  .label.off { border-color: var(--jm-line); color: var(--jm-muted); font-weight: 400; }
+  .meta { font-size: 11px; color: var(--jm-muted); }
+  .btn { font: inherit; font-size: 13px; padding: 11px 12px; border-radius: var(--jm-radius);
+         border: 1px solid var(--jm-accent); background: var(--jm-accent); color: #fff; cursor: pointer; width: 100%; }
+  .btn.sec { background: none; color: var(--jm-fg); border-color: var(--jm-line); }
+  .btn.sm { width: auto; padding: 6px 10px; font-size: 12px; }
+  .banner { border: 1px solid var(--jm-accent); border-left-width: 4px; border-radius: 4px; padding: 10px;
+            font-size: 12px; background: #fafafa; }
+  .fixednote { border: 1px dashed var(--jm-accent); border-radius: 4px; padding: 10px; font-size: 12px; font-weight: 600; }
+  .toast { position: relative; margin-top: auto; border: 1px solid var(--jm-accent); border-radius: var(--jm-radius);
+           padding: 10px 12px; font-size: 12px; background: var(--jm-fg); color: #fff; }
+  ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  ul.list li { border: 1px solid var(--jm-line); border-radius: var(--jm-radius); padding: 10px; }
+  .chk { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; }
+  .chk span.box { flex: 0 0 16px; height: 16px; border: 1px solid var(--jm-fg); border-radius: 3px;
+                  text-align: center; line-height: 14px; font-size: 11px; }
+  .chk.done span.box::after { content: "✓"; }
+  code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-size: 11px; word-break: break-all; }
+  .empty { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+           gap: 10px; text-align: center; color: var(--jm-muted); }
+  .skeleton { height: 14px; border-radius: 4px; background: #eee; }
+</style>
+</head>
+<body>
+
+<header class="jm-bar" aria-label="여정 mockup 도구">
+  <div class="jm-title">헬스 수강신청 제때 끝내기 <code>JRN-gym-reservation</code></div>
+  <ol class="jm-steps" aria-label="단계 목록"></ol>
+  <div class="jm-pos" aria-live="polite"></div>
+  <ol class="jm-screens" aria-label="이 단계의 화면·상태"></ol>
+  <div class="jm-note" role="status"></div>
+  <nav class="jm-nav">
+    <button type="button" data-jm="prev">← 이전</button>
+    <button type="button" data-jm="next">다음 →</button>
+    <a class="jm-doc" href="#">여정 문서</a>
+  </nav>
+</header>
+
+<!-- data-doc: 여정 문서의 docs/ 기준 경로. 복귀 링크(요건 8)에 쓰인다.
+     이 레포에는 docs/reader.html 이 아직 없다(design-doc-structure-validator 소관).
+     리더가 생기기 전까지는 아래 '문서 직접 열기' 링크로 왕복한다. -->
+<main data-journey="JRN-gym-reservation" data-doc="user-journeys/JRN-gym-reservation.md">
+
+  <!-- ══════════ 1. STP-notice-check ══════════ -->
+  <section data-step="STP-notice-check" data-title="접수 기간 확인">
+    <div class="screen" data-screen="home">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">우리 가족
+        <div class="sp">
+          <button type="button" class="btn sec sm" data-offpath="알림 목록 화면">알림</button>
+          <button type="button" class="btn sec sm" data-offpath="설정 화면">설정</button>
+        </div>
+      </div>
+      <div class="body">
+        <div class="card">
+          <div><span class="label">재등록 중</span></div>
+          <p style="margin:8px 0 4px"><strong>부천체육관 · 헬스 월회원</strong></p>
+          <p style="margin:0">기존회원 재등록 기간 <strong>매월 20~25일</strong><br>오늘은 <strong>11월 22일</strong> — 지금 신청할 수 있어요.</p>
+          <p class="meta" style="margin:8px 0 0">신규회원은 26일~말일 · 개강 매월 1일<br>기간 정보 확인일 2026-11-25 · 출처: 부천도시공사
+            <button type="button" class="btn sec sm" data-offpath="외부 브라우저: 공식 접수 안내 페이지">공식 안내 보기</button>
+          </p>
+        </div>
+        <button type="button" class="btn" data-go="STP-pick-center">센터·프로그램 보기</button>
+        <ul class="list">
+          <li>엄마 · 소사국민체육센터 헬스 — <span class="label off">미기록</span>
+            <button type="button" class="btn sec sm" data-go="STP-record-result">결과 기록</button></li>
+        </ul>
+      </div>
+      <nav class="tabbar">
+        <button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함 (JRN-recipe-link-collect)">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button>
+      </nav>
+    </div>
+
+    <!-- 분기: 접수 기간이 아님 -->
+    <div class="screen" data-screen="home" data-state="window-closed" data-label="접수 전" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">우리 가족
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="알림 목록 화면">알림</button></div>
+      </div>
+      <div class="body">
+        <div class="card">
+          <div><span class="label off">접수 전</span></div>
+          <p style="margin:8px 0 4px"><strong>부천체육관 · 헬스 월회원</strong></p>
+          <p style="margin:0">오늘은 <strong>11월 12일</strong>. 재등록은 <strong>20일</strong>부터 열려요.</p>
+          <p class="meta" style="margin:8px 0 0">기간 정보 확인일 2026-11-25 · 출처: 부천도시공사</p>
+        </div>
+        <button type="button" class="btn" data-go="STP-remind-next">20일 전날 알림 받기</button>
+        <button type="button" class="btn sec" data-offpath="외부 브라우저: 공식 접수 안내 페이지">공식 안내 보기</button>
+        <p class="meta">접수 기간이 아니므로 신청 페이지 열기 버튼은 보이지 않습니다.</p>
+      </div>
+      <nav class="tabbar">
+        <button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button>
+      </nav>
+    </div>
+
+    <!-- 분기: 센터 기간 데이터 없음 -->
+    <div class="screen" data-screen="home" data-state="unknown-period" data-label="기간 미확인" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">우리 가족
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="알림 목록 화면">알림</button></div>
+      </div>
+      <div class="body">
+        <div class="card">
+          <div><span class="label off">기간 미확인</span></div>
+          <p style="margin:8px 0 4px"><strong>복사골스포츠센터 · 헬스</strong></p>
+          <p style="margin:0">이 센터의 접수 기간을 확인하지 못했어요. 추측해서 보여드리지 않습니다.</p>
+          <p class="meta" style="margin:8px 0 0">센터별로 접수 기간이 다를 수 있습니다 (미확인 사실 A-3-2)</p>
+        </div>
+        <button type="button" class="btn sec" data-offpath="외부 브라우저: 센터 회원모집 안내 페이지">공식 안내에서 기간 확인</button>
+        <button type="button" class="btn" data-go="STP-remind-next">기간을 직접 입력하고 알림 걸기</button>
+      </div>
+      <nav class="tabbar">
+        <button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button>
+      </nav>
+    </div>
+
+    <!-- 화면 상태: 로딩 -->
+    <div class="screen" data-screen="home" data-state="loading" data-label="로딩" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">우리 가족</div>
+      <div class="body">
+        <div class="card"><div class="skeleton" style="width:40%"></div>
+          <div class="skeleton" style="width:80%;margin-top:10px"></div>
+          <div class="skeleton" style="width:60%;margin-top:6px"></div></div>
+        <div class="skeleton" style="height:42px"></div>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <!-- 화면 상태: 불러오기 실패 -->
+    <div class="screen" data-screen="home" data-state="load-error" data-label="불러오기 실패" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">우리 가족</div>
+      <div class="body">
+        <div class="banner">접수 기간 정보를 불러오지 못했어요. 저장된 정보는 11월 1일에 확인한 값입니다.</div>
+        <div class="card"><span class="label off">오래된 정보</span>
+          <p style="margin:8px 0 0">부천체육관 · 헬스 월회원 — 재등록 20~25일 <span class="meta">(확인일 2026-11-01)</span></p></div>
+        <button type="button" class="btn sec" data-go="STP-notice-check">다시 시도</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+  <!-- ══════════ 2. STP-pick-center ══════════ -->
+  <section data-step="STP-pick-center" data-title="센터·프로그램 고르기">
+    <div class="screen" data-screen="center-list">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-notice-check">←</button> 센터 고르기
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="센터 검색 화면">검색</button></div>
+      </div>
+      <div class="body">
+        <p class="meta">부천도시공사가 운영하는 체육센터 · 확인일 2026-11-25</p>
+        <ul class="list">
+          <li><strong>부천체육관</strong><br><span class="meta">헬스 월회원 / 1일 이용 · 재등록 20~25일</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-pick-center/detail">자세히</button></li>
+          <li><strong>소사국민체육센터</strong><br><span class="meta">헬스 월회원 52,000원 · 1일 2,600원</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-pick-center/detail">자세히</button></li>
+          <li><strong>복사골스포츠센터</strong><br><span class="meta">기간 미확인</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-pick-center/detail">자세히</button></li>
+          <li><strong>송내국민체육센터</strong><br><span class="meta">온라인 접수 안내 있음</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-pick-center/detail">자세히</button></li>
+        </ul>
+        <p class="meta">시간 단위 대관(구장·테니스장)은 부천시 공공서비스예약에서 다룹니다.
+          <button type="button" class="btn sec sm" data-offpath="외부 브라우저: 부천시 공공서비스예약">대관 안내</button></p>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="center-detail" data-state="detail" data-label="센터 상세" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-pick-center">←</button> 소사국민체육센터
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="지도·찾아오는 길 화면">위치</button></div>
+      </div>
+      <div class="body">
+        <div class="card">
+          <p style="margin:0 0 6px"><strong>헬스 월회원</strong> 52,000원</p>
+          <p style="margin:0 0 6px">헬스 1일 1회 2,600원 · 중학생 이상</p>
+          <p style="margin:0">월~금 06:00~21:50</p>
+          <p class="meta" style="margin:8px 0 0">관외 거주자는 이용요금 50% 가산<br>
+            확인일 2026-11-25 · 출처: 부천도시공사
+            <button type="button" class="btn sec sm" data-offpath="외부 브라우저: 센터 프로그램 안내 페이지">출처 보기</button></p>
+        </div>
+        <div class="card">
+          <p style="margin:0"><span class="label">신규접수 중</span></p>
+          <p class="meta" style="margin:6px 0 0">신규 26일~말일 · 개강 매월 1일 · 확인일 2026-11-25</p>
+        </div>
+        <button type="button" class="btn" data-go="STP-prep-account">신청 준비하기</button>
+        <button type="button" class="btn sec" data-offpath="프로그램 전체 목록 화면">다른 프로그램 보기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="center-detail" data-state="stale" data-label="오래된 정보" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-pick-center">←</button> 부천체육관</div>
+      <div class="body">
+        <div class="banner">이 요금·시간 정보는 <strong>61일 전</strong>에 확인한 값이에요. 공식 페이지에서 다시 확인해 주세요.</div>
+        <div class="card">
+          <p style="margin:0 0 6px"><strong>헬스 정기회원</strong> 52,000원 <span class="label off">오래된 정보</span></p>
+          <p style="margin:0">평일 06:00~21:50 · 토·일·공휴일 09:00~16:50</p>
+          <p class="meta" style="margin:8px 0 0">확인일 2026-09-25 · 출처: 부천도시공사
+            <button type="button" class="btn sec sm" data-offpath="외부 브라우저: 센터 시설안내 페이지">출처 보기</button></p>
+        </div>
+        <button type="button" class="btn" data-go="STP-prep-account">그래도 신청 준비하기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="center-list" data-state="empty" data-label="빈 목록" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-notice-check">←</button> 센터 고르기</div>
+      <div class="body">
+        <div class="empty">
+          <p style="margin:0">센터 목록을 아직 받지 못했어요.</p>
+          <button type="button" class="btn sec sm" data-go="STP-pick-center">다시 불러오기</button>
+        </div>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+  <!-- ══════════ 3. STP-prep-account ══════════ -->
+  <section data-step="STP-prep-account" data-title="신청 준비">
+    <div class="screen" data-screen="apply-prep">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-pick-center">←</button> 신청 준비
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="도움말 화면">도움말</button></div>
+      </div>
+      <div class="body">
+        <div class="banner">아직 준비되지 않은 항목이 <strong>2개</strong> 있어요. 공식 사이트에서 막힐 수 있습니다.</div>
+        <div class="card">
+          <p style="margin:0 0 10px"><strong>신청 대상</strong> 아빠(42세) <button type="button" class="btn sec sm" data-offpath="가족 구성원 선택 시트">변경</button></p>
+          <div class="chk"><span class="box"></span><span>부천시 통합회원 가입<br><span class="meta">온라인 신청에 필요합니다</span></span></div>
+          <div class="chk" style="margin-top:8px"><span class="box"></span><span>본인인증 완료 (문자 또는 아이핀)<br><span class="meta">가입 시 요구됩니다</span></span></div>
+          <div class="chk done" style="margin-top:8px"><span class="box"></span><span>관외 거주 여부 확인<br><span class="meta">관외 거주자는 요금 50% 가산</span></span></div>
+        </div>
+        <div class="card">
+          <div class="chk"><span class="box"></span><span>외국인 등록 구성원
+            <button type="button" class="btn sec sm" data-go="STP-prep-account/foreigner">켜기</button></span></div>
+        </div>
+        <div class="fixednote">이 앱은 대신 신청하지 않습니다. 신청과 결제는 부천도시공사 공식 페이지에서 직접 하셔야 합니다.</div>
+        <button type="button" class="btn" data-go="STP-official-apply">공식 신청 페이지 열기</button>
+        <button type="button" class="btn sec" data-go="STP-prep-account/ready">준비 다 됐어요 (전부 체크)</button>
+        <button type="button" class="btn sec" data-go="STP-prep-account/minor">14세 미만 대상으로 바꾸기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="apply-prep" data-state="ready" data-label="준비 완료" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-pick-center">←</button> 신청 준비</div>
+      <div class="body">
+        <div class="card">
+          <p style="margin:0 0 10px"><strong>신청 대상</strong> 아빠(42세)</p>
+          <div class="chk done"><span class="box"></span><span>부천시 통합회원 가입</span></div>
+          <div class="chk done" style="margin-top:8px"><span class="box"></span><span>본인인증 완료 (문자 또는 아이핀)</span></div>
+          <div class="chk done" style="margin-top:8px"><span class="box"></span><span>관외 거주 여부 확인</span></div>
+        </div>
+        <p class="meta">경고 배너 없음 — 모든 항목이 준비되었습니다.</p>
+        <div class="fixednote">이 앱은 대신 신청하지 않습니다. 신청과 결제는 부천도시공사 공식 페이지에서 직접 하셔야 합니다.</div>
+        <button type="button" class="btn" data-go="STP-official-apply">공식 신청 페이지 열기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="apply-prep" data-state="minor" data-label="14세 미만 대상" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-pick-center">←</button> 신청 준비</div>
+      <div class="body">
+        <div class="banner">14세 미만 대상이어서 <strong>법정대리인 동의</strong> 항목이 추가되었어요.</div>
+        <div class="card">
+          <p style="margin:0 0 10px"><strong>신청 대상</strong> 둘째(13세)</p>
+          <div class="chk done"><span class="box"></span><span>부천시 통합회원 가입</span></div>
+          <div class="chk done" style="margin-top:8px"><span class="box"></span><span>본인인증 완료 (문자 또는 아이핀)</span></div>
+          <div class="chk" style="margin-top:8px"><span class="box"></span><span><strong>법정대리인 동의</strong><br><span class="meta">14세 미만은 법정대리인 동의가 필요합니다</span></span></div>
+          <div class="chk done" style="margin-top:8px"><span class="box"></span><span>관외 거주 여부 확인</span></div>
+        </div>
+        <div class="fixednote">이 앱은 대신 신청하지 않습니다. 신청과 결제는 부천도시공사 공식 페이지에서 직접 하셔야 합니다.</div>
+        <button type="button" class="btn" data-go="STP-official-apply">공식 신청 페이지 열기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <!-- 분기: 외국인 구성원 → 현장 확인 (여정 밖으로 끝남) -->
+    <div class="screen" data-screen="apply-prep-onsite" data-state="foreigner" data-label="외국인·현장 확인"
+         data-end="이탈: 현장 접수로 이어짐 (온라인만으로 끝나지 않음)" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-prep-account">←</button> 현장 확인 안내</div>
+      <div class="body">
+        <div class="banner">외국인 등록 구성원은 <strong>증빙서류(외국인등록사실증명 등) 지참 후 현장 확인</strong>이 필요할 수 있어요.
+          온라인 신청만으로 끝나지 않을 수 있습니다.</div>
+        <div class="card">
+          <p style="margin:0 0 6px"><strong>소사국민체육센터</strong></p>
+          <p style="margin:0">문의 032-340-5330</p>
+          <p class="meta" style="margin:6px 0 0">현장 접수 시간(부천체육관 기준): 평일 06:00~21:00 · 토·일·공휴일 09:00~16:00<br>확인일 2026-11-25 · 출처: 부천도시공사</p>
+        </div>
+        <button type="button" class="btn sec" data-offpath="기기 전화 앱: 센터 전화 걸기">전화 걸기</button>
+        <button type="button" class="btn sec" data-go="STP-prep-account">준비 화면으로 돌아가기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+  <!-- ══════════ 4. STP-official-apply ══════════ -->
+  <section data-step="STP-official-apply" data-title="공식 페이지에서 신청">
+    <div class="screen" data-screen="official-handoff">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-prep-account">←</button> 공식 페이지로 이동</div>
+      <div class="body">
+        <div class="fixednote">이 앱은 대신 신청하지 않습니다. 아래 버튼은 부천도시공사 공식 페이지를 열기만 합니다.</div>
+        <div class="card">
+          <p style="margin:0 0 6px">열릴 주소</p>
+          <code>https://www.best.or.kr/fmcs/271?center=BCS03</code>
+          <p class="meta" style="margin:8px 0 0">앱은 아이디·비밀번호·인증번호를 받지 않습니다. 로그인은 공식 사이트에서 하세요.</p>
+        </div>
+        <div data-state="error" data-label="열기 실패" hidden>
+          <div class="banner">공식 페이지를 열지 못했어요.
+            <div style="margin-top:8px;display:flex;gap:6px">
+              <button type="button" class="btn sec sm" data-go="STP-official-apply">다시 열기</button>
+              <button type="button" class="btn sec sm" data-go="STP-official-apply/error">URL 복사</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn" data-go="STP-record-result">공식 신청 페이지 열기 (외부 브라우저)</button>
+        <button type="button" class="btn sec" data-go="STP-official-apply/error" data-branch>열기 실패 케이스 보기</button>
+        <button type="button" class="btn sec" data-go="STP-official-apply/maintenance" data-branch>점검·마감 케이스 보기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="official-handoff" data-state="leaving" data-label="브라우저 전환 중" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">공식 페이지로 이동</div>
+      <div class="body">
+        <div class="empty">
+          <p style="margin:0">외부 브라우저를 여는 중…</p>
+          <p class="meta" style="margin:0">신청을 마치고 앱으로 돌아오면 결과를 기록할 수 있어요.</p>
+        </div>
+        <button type="button" class="btn sec" data-go="STP-record-result">돌아왔어요</button>
+      </div>
+    </div>
+
+    <!-- 분기: 사이트 점검 / 정원 마감 -->
+    <div class="screen" data-screen="official-handoff-blocked" data-state="maintenance" data-label="점검·마감" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-official-apply">←</button> 신청을 못 끝냈어요</div>
+      <div class="body">
+        <div class="banner">공식 사이트가 점검 중이거나 정원이 마감되었을 수 있어요. 앱은 신청 성공 여부를 알 수 없습니다.</div>
+        <button type="button" class="btn sec" data-go="STP-official-apply">공식 페이지 다시 열기</button>
+        <button type="button" class="btn sec" data-go="STP-pick-center">다른 센터 보기</button>
+        <button type="button" class="btn sec" data-go="STP-remind-next">다음 기간 알림 걸기</button>
+        <button type="button" class="btn" data-go="STP-record-result">실패로 기록하기</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+  <!-- ══════════ 5. STP-record-result ══════════ -->
+  <section data-step="STP-record-result" data-title="결과 기록">
+    <div class="screen" data-screen="result-sheet">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">신청 어떻게 되었나요?
+        <div class="sp"><button type="button" class="btn sec sm" data-go="STP-record-result/list">닫기</button></div>
+      </div>
+      <div class="body">
+        <p class="meta">앱은 공식 사이트의 결과를 알 수 없어요. 기록하면 <strong>다음 재등록 기간을 알려드려요.</strong></p>
+        <div class="card">
+          <p style="margin:0"><strong>소사국민체육센터 · 헬스 월회원 · 2026년 12월</strong></p>
+          <p class="meta" style="margin:6px 0 0">대상 아빠 <button type="button" class="btn sec sm" data-offpath="가족 구성원 선택 시트">변경</button></p>
+        </div>
+        <button type="button" class="btn" data-go="STP-remind-next">신청 완료</button>
+        <button type="button" class="btn sec" data-go="STP-record-result/list">대기·미정</button>
+        <button type="button" class="btn sec" data-go="STP-record-result/list">실패 (마감 등)</button>
+        <div class="card">
+          <p class="meta" style="margin:0">메모 (선택) — 영수증 번호 등</p>
+          <p style="margin:6px 0 0;color:var(--jm-muted)">입력하지 않아도 기록됩니다</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="application-list" data-state="list" data-label="신청 기록 목록" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-notice-check">←</button> 신청 기록
+        <div class="sp">
+          <button type="button" class="btn sec sm" data-offpath="구성원 필터 시트">구성원</button>
+          <button type="button" class="btn sec sm" data-offpath="내보내기 공유 시트">내보내기</button>
+        </div>
+      </div>
+      <div class="body">
+        <p class="meta">기기 간 자동 동기화는 아직 없습니다. 내보내기로 가족과 공유하세요.</p>
+        <ul class="list">
+          <li><strong>아빠</strong> · 소사국민체육센터 헬스 · 12월 — <span class="label">신청 완료</span>
+            <p class="meta" style="margin:4px 0 0">내가 기록한 값 · 2026-11-25</p>
+            <button type="button" class="btn sec sm" data-go="STP-remind-next">알림 설정</button></li>
+          <li><strong>엄마</strong> · 부천체육관 헬스 · 12월 — <span class="label off">미기록</span>
+            <p class="meta" style="margin:4px 0 0">공식 페이지를 열었지만 결과를 적지 않았어요</p>
+            <button type="button" class="btn sec sm" data-go="STP-record-result/resume">지금 기록하기</button></li>
+          <li><strong>둘째</strong> · 송내국민체육센터 헬스 · 11월 — <span class="label off">실패 (마감)</span>
+            <button type="button" class="btn sec sm" data-go="STP-pick-center">다른 센터 보기</button></li>
+        </ul>
+        <div class="toast" data-state="saved" data-label="저장 토스트" hidden>기록했어요. 다음 재등록 기간에 알려드릴게요.</div>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <!-- 분기: 중도 이탈 후 이어하기 -->
+    <div class="screen" data-screen="result-sheet" data-state="resume" data-label="이어하기" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">지난번 신청은 어떻게 되었나요?</div>
+      <div class="body">
+        <div class="banner">11월 22일에 <strong>부천체육관</strong> 공식 페이지를 열었어요. 결과를 아직 기록하지 않았습니다.</div>
+        <button type="button" class="btn" data-go="STP-remind-next">신청 완료</button>
+        <button type="button" class="btn sec" data-go="STP-record-result/list">대기·미정</button>
+        <button type="button" class="btn sec" data-go="STP-record-result/list">실패 (마감 등)</button>
+        <button type="button" class="btn sec" data-go="STP-record-result/list">나중에</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 6. STP-remind-next ══════════ -->
+  <section data-step="STP-remind-next" data-title="다음 창구 알림" data-end="여정 완료: 결과 기록 + 다음 재등록 알림 예약">
+    <div class="screen" data-screen="reminder-settings">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-record-result/list">←</button> 알림 설정
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="알림 전체 설정 화면">전체 설정</button></div>
+      </div>
+      <div class="body">
+        <div class="card">
+          <p style="margin:0"><strong>소사국민체육센터 · 헬스 월회원</strong></p>
+          <p style="margin:6px 0 0">다음 재등록 <strong>12월 20일</strong> → 알림 <strong>12월 19일 09:00</strong></p>
+          <p class="meta" style="margin:6px 0 0">예약된 알림 1건 · 기간 정보 확인일 2026-11-25</p>
+        </div>
+        <div class="banner">알림은 <strong>이 기기에서만</strong> 울립니다. 다른 가족 기기에는 전달되지 않습니다.</div>
+        <button type="button" class="btn sec" data-go="STP-remind-next/no-date">기간 미확인 센터 추가</button>
+        <button type="button" class="btn sec" data-go="STP-record-result/list">신청 기록 보기</button>
+        <button type="button" class="btn" data-go="STP-notice-check">홈으로</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="reminder-settings" data-state="no-date" data-label="기간 직접 입력" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-remind-next">←</button> 알림 설정</div>
+      <div class="body">
+        <div class="card">
+          <p style="margin:0"><strong>복사골스포츠센터 · 헬스</strong> <span class="label off">알림 없음</span></p>
+          <p class="meta" style="margin:6px 0 0">이 센터의 재등록 기간을 모릅니다. 날짜를 지어내지 않고 알림도 만들지 않았어요.</p>
+        </div>
+        <div class="card">
+          <p class="meta" style="margin:0 0 6px">재등록 시작일 직접 입력</p>
+          <p style="margin:0">[ 2026-12-__ ] <button type="button" class="btn sec sm" data-offpath="날짜 선택 피커">날짜 고르기</button></p>
+        </div>
+        <button type="button" class="btn" data-go="STP-remind-next">입력하고 알림 만들기</button>
+        <button type="button" class="btn sec" data-offpath="외부 브라우저: 센터 회원모집 안내">공식 안내에서 확인</button>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="reminder-settings" data-state="permission-denied" data-label="알림 권한 거부" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-remind-next">←</button> 알림 설정</div>
+      <div class="body">
+        <div class="banner">알림 권한이 꺼져 있어 <strong>알림을 보낼 수 없어요.</strong> 설정에서 켜 주세요.
+          <div style="margin-top:8px"><button type="button" class="btn sec sm" data-offpath="기기 시스템 설정: 알림 권한">설정 열기</button></div>
+        </div>
+        <div class="card">
+          <p style="margin:0">알림 없이도 홈 화면의 상태 카드로 접수 기간을 확인할 수 있어요.</p>
+          <button type="button" class="btn sec sm" style="margin-top:8px" data-go="STP-notice-check">홈에서 확인하기</button>
+        </div>
+      </div>
+      <nav class="tabbar"><button type="button" aria-current="page">헬스</button>
+        <button type="button" data-offpath="레시피 보관함">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+</main>
+
+<p style="max-width:390px;margin:0 auto 32px;font-size:12px;color:#6b6b6b;text-align:center">
+  여정 문서 리더(<code>docs/reader.html</code>)는 이 레포에 아직 없습니다 —
+  <a href="../../user-journeys/JRN-gym-reservation.md">여정 문서 직접 열기</a>
+</p>
+
+<script>
+/* 단계 엔진 — journey-mockup-builder 번들의 assets/journey-shell.html 원본.
+   요건 2(전환) 3(위치) 5(딥링크) 6(분기 상태·끝 표시) 8(문서 복귀 링크)을 처리하고,
+   요건 9를 돕는다: 현재 단계의 화면·상태 목록 표시, 화면 교체 상태, data-offpath 안내. */
+(function () {
+  var main = document.querySelector('main[data-journey]');
+  var steps = Array.prototype.slice.call(main.querySelectorAll(':scope > section[data-step]'));
+  var ids = steps.map(function (s) { return s.getAttribute('data-step'); });
+  var list = document.querySelector('.jm-steps');
+  var pos = document.querySelector('.jm-pos');
+  var prev = document.querySelector('[data-jm="prev"]');
+  var next = document.querySelector('[data-jm="next"]');
+  var docLink = document.querySelector('.jm-doc');
+  var screenList = document.querySelector('.jm-screens');
+  var note = document.querySelector('.jm-note');
+  var docPath = main.getAttribute('data-doc');
+  var READER = '../../reader.html';
+
+  steps.forEach(function (s, i) {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + ids[i];
+    a.textContent = (i + 1) + '. ' + (s.getAttribute('data-title') || ids[i]);
+    li.appendChild(a); list.appendChild(li);
+  });
+
+  function parse() {
+    var h = decodeURIComponent(location.hash.slice(1));
+    var parts = h.split('/');
+    var i = ids.indexOf(parts[0]);
+    return { index: i < 0 ? 0 : i, state: i < 0 ? null : (parts[1] || null) };
+  }
+
+  function render() {
+    var cur = parse();
+    var step = steps[cur.index];
+    var id = ids[cur.index];
+    steps.forEach(function (s, i) { s.classList.toggle('is-active', i === cur.index); });
+
+    var stateEls = Array.prototype.slice.call(step.querySelectorAll('[data-state]'));
+    var stateEl = null;
+    stateEls.forEach(function (el) { if (!stateEl && el.getAttribute('data-state') === cur.state) stateEl = el; });
+    var host = stateEl ? (stateEl.classList.contains('screen') ? stateEl : stateEl.closest('.screen')) : null;
+    var replacing = host && host.hasAttribute('data-state') && step.contains(host) ? host : null;
+    var shown = [];
+    step.querySelectorAll('.screen').forEach(function (sc) {
+      sc.hidden = replacing ? sc !== replacing : sc.hasAttribute('data-state');
+      if (!sc.hidden) shown.push(sc.getAttribute('data-screen') || '?');
+    });
+    stateEls.forEach(function (el) { if (!el.classList.contains('screen')) el.hidden = el !== stateEl; });
+
+    list.querySelectorAll('a').forEach(function (a, i) {
+      if (i === cur.index) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current');
+    });
+    pos.textContent = (cur.index + 1) + ' / ' + steps.length + ' · ' + (step.getAttribute('data-title') || id)
+      + (cur.state ? ' (' + cur.state + ')' : '') + ' · 화면: ' + shown.join(', ');
+    prev.disabled = cur.index === 0;
+    next.disabled = cur.index === steps.length - 1;
+    if (docPath) docLink.href = READER + '?doc=' + encodeURI(docPath) + '#' + id;
+
+    screenList.innerHTML = '';
+    function chip(href, text, title, on) {
+      var li = document.createElement('li'); var a = document.createElement('a');
+      a.href = href; a.textContent = text; if (title) a.title = title;
+      if (on) a.setAttribute('aria-current', 'true');
+      li.appendChild(a); screenList.appendChild(li);
+    }
+    var base = Array.prototype.slice.call(step.querySelectorAll('.screen:not([data-state])'))
+      .map(function (sc) { return sc.getAttribute('data-screen') || '?'; });
+    chip('#' + id, '기본', base.join(', '), !cur.state || !stateEl);
+    var seen = {};
+    stateEls.forEach(function (el) {
+      var st = el.getAttribute('data-state');
+      if (seen[st]) return; seen[st] = true;
+      var sc = el.classList.contains('screen') ? el : el.closest('.screen');
+      chip('#' + id + '/' + st, el.getAttribute('data-label') || st,
+        (sc && sc.getAttribute('data-screen')) || '', cur.state === st && !!stateEl);
+    });
+    note.textContent = '';
+
+    var old = document.querySelector('.jm-end'); if (old) old.remove();
+    var end = (stateEl && stateEl.getAttribute('data-end')) || step.getAttribute('data-end');
+    if (end) {
+      var box = document.createElement('div');
+      box.className = 'jm-end';
+      box.textContent = '■ 이 갈래의 끝: ' + end;
+      step.appendChild(box);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function go(target) { if (location.hash.slice(1) === target) render(); else location.hash = target; }
+
+  document.addEventListener('click', function (e) {
+    var off = e.target.closest('[data-offpath]');
+    if (off) { e.preventDefault(); note.textContent = '↗ 여정 밖: ' + off.getAttribute('data-offpath') + ' — 이 여정 mockup에서는 열지 않습니다'; return; }
+    var el = e.target.closest('[data-go]');
+    if (el) { e.preventDefault(); go(el.getAttribute('data-go')); }
+  });
+  prev.addEventListener('click', function () { var i = parse().index; if (i > 0) go(ids[i - 1]); });
+  next.addEventListener('click', function () { var i = parse().index; if (i < ids.length - 1) go(ids[i + 1]); });
+  window.addEventListener('hashchange', render);
+  render();
+})();
+</script>
+</body>
+</html>

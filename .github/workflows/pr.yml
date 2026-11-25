@@ -1,0 +1,51 @@
+# PR 체크의 단일 진입점. 브랜치 보호(main ruleset)는 체크 하나만 요구한다: `pr-gate`.
+#
+#   checks -> checks.yml   문서 검증(인계 체크섬 · 링크 · mockup). 앱 스택 비의존.
+#
+# 아직 없는 것과 그 이유: 이미지 발행(image.yml)·kind e2e·kustomize 매니페스트는
+# 지원 OS(D-02)와 가족 공유 인프라(D-03)가 정해지기 전에는 만들 수 없다
+# (`docs/decisions/open-questions.md`). 정해지면 devops 플러그인의
+# `k3s-app-bootstrap` 스킬로 image.yml·test.yml·deploy/ 를 추가하고, 그 job 들을
+# 아래 `pr-gate.needs` 에 넣는다. 브랜치 보호 설정은 그때도 건드리지 않는다.
+name: PR
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+# PR 에 새 push 가 오면 이전 실행을 취소한다.
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+    with:
+      sha: ${{ github.event.pull_request.head.sha }}
+    permissions:
+      contents: read
+
+  # 브랜치 보호의 required status check 로 거는 **유일한** 이름이다.
+  #
+  # `if: always()` 는 빼면 안 된다: 선행 job 이 실패하면 이 job 은 기본적으로 skipped 가 되고,
+  # GitHub 는 skipped 인 required check 를 통과로 친다 — 게이트가 가장 필요한 순간에 열린다.
+  # 그래서 항상 돌리고, needs 결과가 전부 success 가 아니면(failure·cancelled·skipped) 실패한다.
+  pr-gate:
+    name: pr-gate
+    if: always()
+    needs: [checks]
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 2
+    steps:
+      - name: Require every upstream job to succeed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          if ! echo "$NEEDS" | jq -e 'all(.[]; .result == "success")' > /dev/null; then
+            echo "::error::성공하지 않은 선행 job 이 있다 — 위 목록 참조"
+            exit 1
+          fi

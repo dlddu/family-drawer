@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유튜브에서 받은 레시피를 모으고 다시 열기 — 여정 mockup</title>
+<style>
+  /* ── 1. 디자인 시스템 토큰 ─────────────────────────────
+     이 레포에는 디자인 시스템 문서가 아직 없다. 아래 값은 **임의 스타일**(무채색 최소)이며
+     디자인 시스템이 생기면 그 토큰을 가리키도록 바꿔야 한다. */
+  :root {
+    --jm-bg: #ffffff;
+    --jm-fg: #1a1a1a;
+    --jm-muted: #6b6b6b;
+    --jm-line: #d9d9d9;
+    --jm-accent: #1a1a1a;
+    --jm-radius: 8px;
+    --jm-gap: 12px;
+    --jm-font: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  }
+
+  /* ── 2. 셸(리뷰 도구) */
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--jm-font); color: var(--jm-fg); background: #f2f2f2; }
+  .jm-bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: var(--jm-gap);
+            align-items: center; padding: 8px 16px; border-bottom: 1px dashed var(--jm-line);
+            background: var(--jm-bg); font-size: 13px; }
+  .jm-title code { color: var(--jm-muted); }
+  .jm-steps { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0; padding: 0; }
+  .jm-steps a { display: block; padding: 2px 8px; border: 1px solid var(--jm-line); border-radius: 999px;
+                color: var(--jm-muted); text-decoration: none; }
+  .jm-steps a[aria-current="step"] { border-color: var(--jm-accent); color: var(--jm-fg); font-weight: 600; }
+  .jm-pos { color: var(--jm-muted); }
+  .jm-nav { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+  .jm-nav button, .jm-nav a { font: inherit; padding: 4px 10px; border: 1px solid var(--jm-line);
+            border-radius: var(--jm-radius); background: none; color: var(--jm-fg); text-decoration: none; cursor: pointer; }
+  .jm-nav button:disabled { opacity: .4; cursor: default; }
+  .jm-screens { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+                list-style: none; margin: 0; padding: 0; color: var(--jm-muted); }
+  .jm-screens::before { content: "이 단계의 화면·상태:"; margin-right: 4px; }
+  .jm-screens a { display: block; padding: 1px 8px; border: 1px dotted var(--jm-line); border-radius: 999px;
+                  color: var(--jm-muted); text-decoration: none; }
+  .jm-screens a[aria-current="true"] { border-style: solid; border-color: var(--jm-accent); color: var(--jm-fg); }
+  .jm-note { flex-basis: 100%; color: var(--jm-muted); }
+  .jm-note:empty { display: none; }
+  .jm-end { margin: 16px auto; max-width: 390px; padding: 8px 12px; border: 1px dashed var(--jm-accent);
+            border-radius: var(--jm-radius); font-size: 13px; background: var(--jm-bg); }
+
+  /* ── 3. 단계 표시 */
+  main > section[data-step] { display: none; }
+  main > section[data-step].is-active { display: block; }
+
+  /* ── 4. 제품 화면 스타일 (임의 스타일) */
+  .screen { max-width: 390px; margin: 24px auto; background: var(--jm-bg); border: 1px solid var(--jm-line);
+            border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; min-height: 600px; }
+  .statusbar { height: 22px; display: flex; justify-content: space-between; align-items: center;
+               padding: 0 14px; font-size: 11px; color: var(--jm-muted); background: #fafafa; }
+  .apphdr { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--jm-line);
+            font-weight: 600; font-size: 15px; }
+  .apphdr .sp { margin-left: auto; display: flex; gap: 6px; }
+  .body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.5; }
+  .tabbar { display: flex; border-top: 1px solid var(--jm-line); }
+  .tabbar button { flex: 1; font: inherit; font-size: 11px; padding: 8px 0; background: none; border: none;
+                   color: var(--jm-muted); cursor: pointer; }
+  .tabbar button[aria-current="page"] { color: var(--jm-fg); font-weight: 700; }
+  .card { border: 1px solid var(--jm-line); border-radius: var(--jm-radius); padding: 12px; }
+  .label { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--jm-accent);
+           font-size: 11px; font-weight: 700; }
+  .label.off { border-color: var(--jm-line); color: var(--jm-muted); font-weight: 400; }
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--jm-line);
+          font-size: 11px; margin-right: 4px; }
+  .chip.on { border-color: var(--jm-accent); font-weight: 700; }
+  .meta { font-size: 11px; color: var(--jm-muted); }
+  .btn { font: inherit; font-size: 13px; padding: 11px 12px; border-radius: var(--jm-radius);
+         border: 1px solid var(--jm-accent); background: var(--jm-accent); color: #fff; cursor: pointer; width: 100%; }
+  .btn.sec { background: none; color: var(--jm-fg); border-color: var(--jm-line); }
+  .btn.sm { width: auto; padding: 6px 10px; font-size: 12px; }
+  .banner { border: 1px solid var(--jm-accent); border-left-width: 4px; border-radius: 4px; padding: 10px;
+            font-size: 12px; background: #fafafa; }
+  .toast { margin-top: auto; border: 1px solid var(--jm-accent); border-radius: var(--jm-radius);
+           padding: 10px 12px; font-size: 12px; background: var(--jm-fg); color: #fff; }
+  ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  ul.list li { border: 1px solid var(--jm-line); border-radius: var(--jm-radius); padding: 10px; }
+  .field { border: 1px solid var(--jm-line); border-radius: var(--jm-radius); padding: 8px 10px; font-size: 13px; }
+  .field .lb { font-size: 11px; color: var(--jm-muted); display: block; margin-bottom: 3px; }
+  code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-size: 11px; word-break: break-all; }
+  .empty { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+           gap: 10px; text-align: center; color: var(--jm-muted); }
+  .skeleton { height: 14px; border-radius: 4px; background: #eee; }
+  .thumb { width: 100%; aspect-ratio: 16/9; border: 1px solid var(--jm-line); border-radius: 6px;
+           display: flex; align-items: center; justify-content: center; color: var(--jm-muted); font-size: 11px; }
+  .sheet { margin-top: auto; border-top: 1px solid var(--jm-accent); padding: 12px; display: flex;
+           flex-direction: column; gap: 8px; background: #fafafa; }
+  .modal { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; background: #e8e8e8; }
+  .modal .inner { background: #fff; border: 1px solid var(--jm-accent); border-radius: 12px; padding: 16px;
+                  display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+  .ytfake { flex: 1; background: #111; color: #fff; display: flex; flex-direction: column; }
+  .ytfake .vid { aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center;
+                 color: #888; font-size: 11px; border-bottom: 1px solid #333; }
+  .ytfake .ytbody { padding: 12px; font-size: 13px; }
+  .ytfake .ytrow { display: flex; gap: 10px; margin-top: 12px; font-size: 11px; color: #bbb; }
+  .ytfake .ytrow button { font: inherit; background: none; border: 1px solid #444; color: #fff;
+                          border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header class="jm-bar" aria-label="여정 mockup 도구">
+  <div class="jm-title">유튜브 레시피 모으고 다시 열기 <code>JRN-recipe-link-collect</code></div>
+  <ol class="jm-steps" aria-label="단계 목록"></ol>
+  <div class="jm-pos" aria-live="polite"></div>
+  <ol class="jm-screens" aria-label="이 단계의 화면·상태"></ol>
+  <div class="jm-note" role="status"></div>
+  <nav class="jm-nav">
+    <button type="button" data-jm="prev">← 이전</button>
+    <button type="button" data-jm="next">다음 →</button>
+    <a class="jm-doc" href="#">여정 문서</a>
+  </nav>
+</header>
+
+<!-- data-doc: 여정 문서의 docs/ 기준 경로. docs/reader.html 은 아직 없다(validator 소관). -->
+<main data-journey="JRN-recipe-link-collect" data-doc="user-journeys/JRN-recipe-link-collect.md">
+
+  <!-- ══════════ 1. STP-share-from-youtube ══════════ -->
+  <section data-step="STP-share-from-youtube" data-title="유튜브에서 공유">
+    <!-- 유튜브 앱은 우리 구현 화면이 아니다. 여정의 입구이므로 맥락용으로만 그린다. -->
+    <div class="screen" data-screen="external-youtube-app">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="ytfake">
+        <div class="vid">[ 외부 앱: YouTube 재생 화면 — 우리 구현 범위 아님 ]</div>
+        <div class="ytbody">
+          <strong>초간단 김치찌개 10분 완성</strong>
+          <p class="meta" style="color:#bbb;margin:6px 0 0">엄마의손맛TV · 조회수 12만</p>
+          <div class="ytrow">
+            <button type="button" data-offpath="YouTube 좋아요 (외부 앱)">좋아요</button>
+            <button type="button" data-go="STP-share-from-youtube/app-list">공유</button>
+            <button type="button" data-offpath="YouTube 나중에 볼 동영상 (외부 앱)">저장</button>
+          </div>
+          <p style="color:#888;font-size:11px;margin-top:14px">공유를 누르면 OS 공유 시트가 열립니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="os-share-sheet" data-state="app-list" data-label="OS 공유 시트" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="ytfake" style="background:#222">
+        <div class="vid" style="aspect-ratio:21/9">[ 외부: YouTube 화면 (뒤) ]</div>
+      </div>
+      <div class="sheet">
+        <p class="meta" style="margin:0">공유 — 초간단 김치찌개 10분 완성</p>
+        <button type="button" class="btn" data-go="STP-confirm-save">우리 가족 (이 앱)</button>
+        <button type="button" class="btn sec" data-offpath="외부 앱: 메시지">메시지</button>
+        <button type="button" class="btn sec" data-offpath="외부 앱: 카카오톡">카카오톡</button>
+        <button type="button" class="btn sec" data-offpath="OS 기능: 링크 복사">링크 복사</button>
+        <p class="meta" style="margin:0">전달되는 내용은 URL 단독이 아니라 <code>제목 + 줄바꿈 + URL</code> 문자열일 수 있습니다 (가정, 기기 실측 필요)</p>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="share-receive" data-state="receiving" data-label="공유 수신 중" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">우리 가족</div>
+      <div class="body">
+        <div class="empty">
+          <p style="margin:0">받은 링크를 확인하는 중…</p>
+          <div class="skeleton" style="width:200px"></div>
+          <p class="meta" style="margin:0">로그인·온보딩 없이 바로 저장 화면으로 갑니다</p>
+        </div>
+        <button type="button" class="btn sec" data-go="STP-confirm-save">계속</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 2. STP-confirm-save ══════════ -->
+  <section data-step="STP-confirm-save" data-title="확인하고 저장">
+    <div class="screen" data-screen="save-confirm">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-share-from-youtube">←</button> 레시피 저장
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="저장 도움말 시트">?</button></div>
+      </div>
+      <div class="body">
+        <div class="thumb">[ 썸네일 ]</div>
+        <div class="field"><span class="lb">제목</span>초간단 김치찌개 10분 완성</div>
+        <div data-state="title-failed" data-label="제목 조회 실패" hidden>
+          <p class="meta" style="margin:0;border:1px dashed var(--jm-line);border-radius:4px;padding:8px">
+            제목을 못 불러왔어요. 직접 적거나 나중에 다시 시도할 수 있어요.
+            <button type="button" class="btn sec sm" data-go="STP-confirm-save">다시 시도</button></p>
+        </div>
+        <div class="field"><span class="lb">메모 (선택)</span><span style="color:var(--jm-muted)">고추장 1T로 줄이기</span></div>
+        <div class="field"><span class="lb">태그 (선택)</span><span class="chip">국물</span><span class="chip">10분</span>
+          <button type="button" class="btn sec sm" data-offpath="태그 선택 시트">+ 태그</button></div>
+        <div class="field"><span class="lb">공유한 사람</span>엄마
+          <button type="button" class="btn sec sm" data-offpath="공유자 라벨 선택 시트">변경</button></div>
+        <div class="card">
+          <p class="meta" style="margin:0">정규화 결과 — <code>videoId=_-9zZaA0bB1</code> · 시작시간 없음<br>
+            <code>si</code>·<code>list</code>·<code>index</code> 는 버립니다</p>
+        </div>
+        <button type="button" class="btn" data-go="STP-browse-collection">저장</button>
+        <div class="toast" data-state="saved" data-label="저장 토스트" hidden>엄마의 레시피에 저장했어요</div>
+        <div class="toast" data-state="offline" data-label="오프라인 저장 토스트" hidden>링크만 먼저 저장했어요. 연결되면 제목을 채울게요</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn sec sm" data-go="STP-confirm-save/duplicate" data-branch>중복 케이스</button>
+          <button type="button" class="btn sec sm" data-go="STP-confirm-save/invalid-not-youtube" data-branch>유튜브 아님</button>
+          <button type="button" class="btn sec sm" data-go="STP-confirm-save/invalid-no-id" data-branch>ID 추출 실패</button>
+          <button type="button" class="btn sec sm" data-go="STP-confirm-save/title-failed">제목 실패</button>
+          <button type="button" class="btn sec sm" data-go="STP-confirm-save/offline">오프라인</button>
+          <button type="button" class="btn sec sm" data-go="STP-confirm-save/resume" data-branch>이어하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 분기: 중복 (videoId 기준) -->
+    <div class="screen" data-screen="save-confirm" data-state="duplicate" data-label="이미 있는 영상" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-share-from-youtube">←</button> 레시피 저장</div>
+      <div class="body">
+        <div class="banner"><strong>이미 보관함에 있는 영상이에요</strong>
+          <p class="meta" style="margin:6px 0 0">링크 형태는 달라도 같은 영상입니다 — <code>videoId=dQw4w9WgXcQ</code><br>
+            받은 링크: <code>https://youtu.be/dQw4w9WgXcQ?si=AbCdEfGhIjKlMnOp</code></p>
+        </div>
+        <div class="card">
+          <p style="margin:0"><strong>엄마의 돼지고기 김치찌개</strong></p>
+          <p class="meta" style="margin:4px 0 0">엄마가 공유 · 2026-10-02 저장 · 메모 1개</p>
+        </div>
+        <button type="button" class="btn" data-go="STP-browse-collection">기존 항목 보기</button>
+        <button type="button" class="btn sec" data-go="STP-confirm-save">메모만 추가</button>
+        <div class="card">
+          <p class="meta" style="margin:0">받은 링크에 시작시간이 있으면(<code>?t=120</code>) 기존 항목의 <strong>표시 구간</strong>으로 추가할지 제안합니다.</p>
+          <button type="button" class="btn sec sm" style="margin-top:6px" data-go="STP-confirm-save/duplicate">2분 지점을 구간으로 추가</button>
+        </div>
+        <p class="meta">새 항목은 만들지 않았습니다 (항목 수 변화 0)</p>
+      </div>
+    </div>
+
+    <!-- 분기: 유튜브 링크가 아님 -->
+    <div class="screen" data-screen="save-confirm" data-state="invalid-not-youtube" data-label="유튜브 아님" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-share-from-youtube">←</button> 레시피 저장</div>
+      <div class="body">
+        <div class="banner"><strong>유튜브 영상 링크를 찾지 못했어요</strong></div>
+        <div class="card">
+          <p class="meta" style="margin:0 0 6px">받은 내용 (그대로 보관 중)</p>
+          <code>https://naver.com/recipe/123</code>
+        </div>
+        <button type="button" class="btn" data-go="STP-browse-collection">받은 내용 그대로 메모로 저장</button>
+        <button type="button" class="btn sec" data-go="STP-share-from-youtube">취소하고 돌아가기</button>
+        <p class="meta">취소해도 받은 내용은 버리지 않고 임시 보관합니다.</p>
+      </div>
+    </div>
+
+    <!-- 분기: videoId 추출 실패 -->
+    <div class="screen" data-screen="save-confirm" data-state="invalid-no-id" data-label="끊긴 링크" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-share-from-youtube">←</button> 레시피 저장</div>
+      <div class="body">
+        <div class="banner"><strong>링크가 중간에 끊긴 것 같아요</strong>
+          <p class="meta" style="margin:6px 0 0">유튜브 주소지만 영상 ID(11자)를 찾지 못했습니다.</p></div>
+        <div class="card">
+          <p class="meta" style="margin:0 0 6px">받은 내용 (그대로 보관 중)</p>
+          <code>https://youtu.be/abc</code>
+        </div>
+        <button type="button" class="btn" data-go="STP-browse-collection">원문 그대로 저장</button>
+        <button type="button" class="btn sec" data-go="STP-fix-entry/edit-link">링크 직접 고치기</button>
+        <p class="meta">채널·검색 주소(<code>/@channel</code>, <code>/results?search_query=</code>)도 같은 처리를 받습니다.</p>
+      </div>
+    </div>
+
+    <!-- 분기: 중도 이탈 후 이어하기 -->
+    <div class="screen" data-screen="save-confirm" data-state="resume" data-label="임시 보관 이어하기" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">저장하지 않은 링크가 있어요</div>
+      <div class="body">
+        <div class="banner">어제 받은 링크가 저장되지 않은 채 남아 있어요. 이어서 저장할까요?</div>
+        <div class="card"><p style="margin:0"><strong>초간단 김치찌개 10분 완성</strong></p>
+          <p class="meta" style="margin:4px 0 0">엄마가 공유 · 2026-11-24 수신</p></div>
+        <button type="button" class="btn" data-go="STP-confirm-save">이어서 저장하기</button>
+        <button type="button" class="btn sec" data-go="STP-browse-collection">나중에</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 3. STP-browse-collection ══════════ -->
+  <section data-step="STP-browse-collection" data-title="보관함에서 찾기">
+    <div class="screen" data-screen="collection-list">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">엄마의 레시피
+        <div class="sp">
+          <button type="button" class="btn sec sm" data-offpath="검색 입력 화면">검색</button>
+          <button type="button" class="btn sec sm" data-offpath="내보내기 공유 시트">내보내기</button>
+        </div>
+      </div>
+      <div class="body">
+        <div>
+          <span class="chip">전체 12</span>
+          <button type="button" class="btn sec sm" data-go="STP-browse-collection/filtered">국물</button>
+          <button type="button" class="btn sec sm" data-offpath="태그 필터 시트">+ 필터</button>
+        </div>
+        <p class="meta">기기 간 자동 동기화는 아직 없습니다 — 내보내기로 가족과 공유하세요</p>
+        <ul class="list">
+          <li><strong>초간단 김치찌개 10분 완성</strong><br>
+            <span class="meta">엄마가 공유 · 2026-11-25 · <span class="chip">국물</span></span><br>
+            <button type="button" class="btn sec sm" data-go="STP-open-original">열기</button></li>
+          <li><strong>제목 없음</strong> <span class="label off">제목 못 불러옴</span><br>
+            <span class="meta">엄마가 공유 · 2026-11-20 · 메모 "닭볶음탕 양념"</span><br>
+            <button type="button" class="btn sec sm" data-offpath="제목 다시 불러오기 동작">제목 다시 불러오기</button>
+            <button type="button" class="btn sec sm" data-go="STP-open-original">열기</button></li>
+          <li><strong>엄마의 돼지고기 김치찌개</strong><br>
+            <span class="meta">엄마가 공유 · 2026-10-02 · 2분 지점 구간 1개</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-open-original">열기</button></li>
+          <li><strong>소고기 미역국</strong> <span class="label off">볼 수 없음</span><br>
+            <span class="meta">아빠가 공유 · 2026-09-14</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-open-original/unavailable">열기</button></li>
+        </ul>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn sec sm" data-go="STP-browse-collection/empty">빈 상태</button>
+          <button type="button" class="btn sec sm" data-go="STP-browse-collection/no-results">결과 0건</button>
+          <button type="button" class="btn sec sm" data-go="STP-browse-collection/loading">로딩</button>
+        </div>
+      </div>
+      <nav class="tabbar">
+        <button type="button" data-offpath="헬스 수강신청 탭 (JRN-gym-reservation)">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button>
+      </nav>
+    </div>
+
+    <div class="screen" data-screen="collection-list" data-state="filtered" data-label="필터 적용됨" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">엄마의 레시피
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="검색 입력 화면">검색</button></div>
+      </div>
+      <div class="body">
+        <div><span class="chip on">태그 국물 ✕</span><span class="chip on">공유자 엄마 ✕</span>
+          <button type="button" class="btn sec sm" data-go="STP-browse-collection">필터 지우기</button></div>
+        <p class="meta">2건 / 전체 12건</p>
+        <ul class="list">
+          <li><strong>초간단 김치찌개 10분 완성</strong><br><span class="meta">엄마가 공유</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-open-original">열기</button></li>
+          <li><strong>엄마의 돼지고기 김치찌개</strong><br><span class="meta">엄마가 공유</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-open-original">열기</button></li>
+        </ul>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="collection-list" data-state="empty" data-label="보관함 빈 상태" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">엄마의 레시피</div>
+      <div class="body">
+        <div class="empty">
+          <p style="margin:0"><strong>아직 모은 레시피가 없어요.<br>유튜브에서 공유해 보세요</strong></p>
+          <p class="meta" style="margin:0">유튜브 앱 → 공유 → '우리 가족' 선택</p>
+          <button type="button" class="btn sec sm" data-go="STP-share-from-youtube">공유하는 방법 보기</button>
+        </div>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="collection-list" data-state="no-results" data-label="검색 결과 0건" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">엄마의 레시피</div>
+      <div class="body">
+        <div class="field"><span class="lb">검색</span>파스타</div>
+        <div><span class="chip on">태그 국물 ✕</span></div>
+        <div class="empty">
+          <p style="margin:0"><strong>찾는 레시피가 없어요</strong></p>
+          <p class="meta" style="margin:0">보관함에는 12건이 있습니다 (빈 상태와 다른 문구)</p>
+          <button type="button" class="btn sec sm" data-go="STP-browse-collection">필터 지우기</button>
+        </div>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <div class="screen" data-screen="collection-list" data-state="loading" data-label="로딩" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">엄마의 레시피</div>
+      <div class="body">
+        <div class="skeleton" style="width:30%"></div>
+        <div class="card"><div class="skeleton" style="width:70%"></div>
+          <div class="skeleton" style="width:40%;margin-top:8px"></div></div>
+        <div class="card"><div class="skeleton" style="width:60%"></div>
+          <div class="skeleton" style="width:45%;margin-top:8px"></div></div>
+        <button type="button" class="btn sec" data-go="STP-browse-collection">불러오기 완료</button>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+  <!-- ══════════ 4. STP-open-original ══════════ -->
+  <section data-step="STP-open-original" data-title="원본 다시 열기">
+    <div class="screen" data-screen="recipe-detail">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-browse-collection">←</button> 레시피
+        <div class="sp">
+          <button type="button" class="btn sec sm" data-offpath="항목 공유 시트">공유</button>
+          <button type="button" class="btn sec sm" data-go="STP-fix-entry">⋯</button>
+        </div>
+      </div>
+      <div class="body">
+        <div class="thumb">[ 썸네일 ]</div>
+        <p style="margin:0"><strong>초간단 김치찌개 10분 완성</strong></p>
+        <p class="meta" style="margin:0">엄마가 공유 · 2026-11-25 저장 · <span class="chip">국물</span><span class="chip">10분</span></p>
+        <div class="card">
+          <p class="meta" style="margin:0 0 4px">메모</p>
+          <p style="margin:0">고추장 1T로 줄이기. 두부는 마지막에.</p>
+        </div>
+        <div class="card">
+          <p class="meta" style="margin:0">원본 <code>https://www.youtube.com/watch?v=dQw4w9WgXcQ</code><br>
+            시작시간 <strong>1분 30초</strong> — 이 지점부터 열립니다</p>
+        </div>
+        <button type="button" class="btn" data-go="STP-open-original/web-fallback">원본 보기 (유튜브)</button>
+        <button type="button" class="btn sec" data-offpath="구간 추가·편집 시트">구간 추가</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn sec sm" data-go="STP-open-original/web-fallback" data-branch>유튜브 앱 없음</button>
+          <button type="button" class="btn sec sm" data-go="STP-open-original/unavailable" data-branch>삭제·비공개</button>
+        </div>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <!-- 분기: 유튜브 앱 미설치 → 브라우저 대체 -->
+    <div class="screen" data-screen="recipe-detail" data-state="web-fallback" data-label="브라우저로 열림" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-browse-collection">←</button> 레시피</div>
+      <div class="body">
+        <div class="thumb">[ 썸네일 ]</div>
+        <p style="margin:0"><strong>초간단 김치찌개 10분 완성</strong></p>
+        <div class="card"><p class="meta" style="margin:0">열린 주소
+          <code>https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=90s</code></p></div>
+        <button type="button" class="btn sec" data-go="STP-open-original">상세로 돌아가기</button>
+        <div class="toast">유튜브 앱이 없어서 브라우저로 열었어요</div>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+
+    <!-- 분기: 영상 삭제·비공개 -->
+    <div class="screen" data-screen="recipe-detail" data-state="unavailable" data-label="볼 수 없는 영상" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-browse-collection">←</button> 레시피
+        <div class="sp"><button type="button" class="btn sec sm" data-go="STP-fix-entry">⋯</button></div>
+      </div>
+      <div class="body">
+        <div class="banner"><strong>이 영상은 지금 볼 수 없어요(삭제되었거나 비공개)</strong></div>
+        <div class="thumb">[ 썸네일 없음 ]</div>
+        <p style="margin:0"><strong>소고기 미역국</strong> <span class="label off">볼 수 없음</span></p>
+        <div class="card">
+          <p class="meta" style="margin:0 0 4px">메모 (그대로 보존됨)</p>
+          <p style="margin:0">참기름에 고기 먼저 볶기. 미역은 30분 불림.</p>
+        </div>
+        <button type="button" class="btn" data-go="STP-fix-entry/edit-link">링크 수정</button>
+        <button type="button" class="btn sec" data-go="STP-fix-entry/delete-confirm">삭제</button>
+        <p class="meta">사용자가 쓴 제목·메모·태그는 지우지 않습니다.</p>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+  <!-- ══════════ 5. STP-fix-entry ══════════ -->
+  <section data-step="STP-fix-entry" data-title="잘못 저장된 것 정리" data-end="여정 완료: 보관함이 정리된 상태로 유지">
+    <div class="screen" data-screen="recipe-detail-actions">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-open-original">←</button> 레시피</div>
+      <div class="body">
+        <p style="margin:0"><strong>소고기 미역국</strong></p>
+        <p class="meta" style="margin:0">아빠가 공유 · 2026-09-14</p>
+      </div>
+      <div class="sheet">
+        <p class="meta" style="margin:0">항목 관리</p>
+        <button type="button" class="btn sec" data-offpath="제목·메모·태그 편집 화면">제목·메모·태그 수정</button>
+        <button type="button" class="btn sec" data-go="STP-fix-entry/edit-link">링크 수정</button>
+        <button type="button" class="btn sec" data-offpath="다른 항목과 합치기 선택 화면">다른 항목과 합치기</button>
+        <button type="button" class="btn" data-go="STP-fix-entry/delete-confirm">삭제</button>
+        <button type="button" class="btn sec" data-go="STP-open-original">취소</button>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="link-edit" data-state="edit-link" data-label="링크 수정" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr"><button type="button" class="btn sec sm" data-go="STP-fix-entry">←</button> 링크 수정</div>
+      <div class="body">
+        <div class="field"><span class="lb">현재 링크 (볼 수 없음)</span><code>https://youtu.be/abc</code></div>
+        <div class="field"><span class="lb">새 링크 붙여넣기</span><code>https://youtu.be/dQw4w9WgXcQ?si=AbCd</code></div>
+        <div class="card"><p class="meta" style="margin:0">저장할 때 처음과 같은 정규화·중복 판정을 다시 거칩니다 —
+          <code>videoId=dQw4w9WgXcQ</code> 추출 · <code>si</code> 제거 · 중복 확인</p></div>
+        <div class="banner" data-state="edit-duplicate" data-label="수정 중 중복" hidden>
+          이 링크는 이미 보관함에 있는 영상이에요. 두 항목을 합칠까요?
+          <div style="margin-top:8px"><button type="button" class="btn sec sm" data-go="STP-browse-collection">기존 항목 보기</button></div>
+        </div>
+        <button type="button" class="btn" data-go="STP-open-original">수정 저장</button>
+        <button type="button" class="btn sec" data-go="STP-fix-entry/edit-duplicate" data-branch>중복 케이스 보기</button>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="delete-confirm-modal" data-state="delete-confirm" data-label="삭제 확인 모달" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">레시피</div>
+      <div class="modal">
+        <div class="inner">
+          <strong>이 레시피를 삭제할까요?</strong>
+          <p style="margin:0">「소고기 미역국」 — 아빠가 공유한 항목입니다. 메모도 함께 사라집니다.</p>
+          <p class="meta" style="margin:0">가족이 함께 쓰는 보관함이라 삭제 전에 한 번 확인합니다.</p>
+          <button type="button" class="btn" data-go="STP-fix-entry/deleted">삭제</button>
+          <button type="button" class="btn sec" data-go="STP-fix-entry">취소</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="collection-list" data-state="deleted" data-label="삭제 완료·되돌리기" hidden>
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="apphdr">엄마의 레시피
+        <div class="sp"><button type="button" class="btn sec sm" data-offpath="내보내기 공유 시트">내보내기</button></div>
+      </div>
+      <div class="body">
+        <p class="meta">전체 11건 (1건 삭제됨)</p>
+        <ul class="list">
+          <li><strong>초간단 김치찌개 10분 완성</strong><br><span class="meta">엄마가 공유</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-open-original">열기</button></li>
+          <li><strong>엄마의 돼지고기 김치찌개</strong><br><span class="meta">엄마가 공유</span><br>
+            <button type="button" class="btn sec sm" data-go="STP-open-original">열기</button></li>
+        </ul>
+        <div class="toast">「소고기 미역국」을 삭제했어요
+          <button type="button" class="btn sec sm" style="margin-left:8px;color:#fff;border-color:#fff"
+                  data-go="STP-browse-collection">되돌리기</button></div>
+      </div>
+      <nav class="tabbar"><button type="button" data-offpath="헬스 수강신청 탭">헬스</button>
+        <button type="button" aria-current="page">레시피</button>
+        <button type="button" data-offpath="가족 기록 화면">가족</button></nav>
+    </div>
+  </section>
+
+</main>
+
+<p style="max-width:390px;margin:0 auto 32px;font-size:12px;color:#6b6b6b;text-align:center">
+  여정 문서 리더(<code>docs/reader.html</code>)는 이 레포에 아직 없습니다 —
+  <a href="../../user-journeys/JRN-recipe-link-collect.md">여정 문서 직접 열기</a>
+</p>
+
+<script>
+/* 단계 엔진 — journey-mockup-builder 번들의 assets/journey-shell.html 원본. */
+(function () {
+  var main = document.querySelector('main[data-journey]');
+  var steps = Array.prototype.slice.call(main.querySelectorAll(':scope > section[data-step]'));
+  var ids = steps.map(function (s) { return s.getAttribute('data-step'); });
+  var list = document.querySelector('.jm-steps');
+  var pos = document.querySelector('.jm-pos');
+  var prev = document.querySelector('[data-jm="prev"]');
+  var next = document.querySelector('[data-jm="next"]');
+  var docLink = document.querySelector('.jm-doc');
+  var screenList = document.querySelector('.jm-screens');
+  var note = document.querySelector('.jm-note');
+  var docPath = main.getAttribute('data-doc');
+  var READER = '../../reader.html';
+
+  steps.forEach(function (s, i) {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + ids[i];
+    a.textContent = (i + 1) + '. ' + (s.getAttribute('data-title') || ids[i]);
+    li.appendChild(a); list.appendChild(li);
+  });
+
+  function parse() {
+    var h = decodeURIComponent(location.hash.slice(1));
+    var parts = h.split('/');
+    var i = ids.indexOf(parts[0]);
+    return { index: i < 0 ? 0 : i, state: i < 0 ? null : (parts[1] || null) };
+  }
+
+  function render() {
+    var cur = parse();
+    var step = steps[cur.index];
+    var id = ids[cur.index];
+    steps.forEach(function (s, i) { s.classList.toggle('is-active', i === cur.index); });
+
+    var stateEls = Array.prototype.slice.call(step.querySelectorAll('[data-state]'));
+    var stateEl = null;
+    stateEls.forEach(function (el) { if (!stateEl && el.getAttribute('data-state') === cur.state) stateEl = el; });
+    var host = stateEl ? (stateEl.classList.contains('screen') ? stateEl : stateEl.closest('.screen')) : null;
+    var replacing = host && host.hasAttribute('data-state') && step.contains(host) ? host : null;
+    var shown = [];
+    step.querySelectorAll('.screen').forEach(function (sc) {
+      sc.hidden = replacing ? sc !== replacing : sc.hasAttribute('data-state');
+      if (!sc.hidden) shown.push(sc.getAttribute('data-screen') || '?');
+    });
+    stateEls.forEach(function (el) { if (!el.classList.contains('screen')) el.hidden = el !== stateEl; });
+
+    list.querySelectorAll('a').forEach(function (a, i) {
+      if (i === cur.index) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current');
+    });
+    pos.textContent = (cur.index + 1) + ' / ' + steps.length + ' · ' + (step.getAttribute('data-title') || id)
+      + (cur.state ? ' (' + cur.state + ')' : '') + ' · 화면: ' + shown.join(', ');
+    prev.disabled = cur.index === 0;
+    next.disabled = cur.index === steps.length - 1;
+    if (docPath) docLink.href = READER + '?doc=' + encodeURI(docPath) + '#' + id;
+
+    screenList.innerHTML = '';
+    function chip(href, text, title, on) {
+      var li = document.createElement('li'); var a = document.createElement('a');
+      a.href = href; a.textContent = text; if (title) a.title = title;
+      if (on) a.setAttribute('aria-current', 'true');
+      li.appendChild(a); screenList.appendChild(li);
+    }
+    var base = Array.prototype.slice.call(step.querySelectorAll('.screen:not([data-state])'))
+      .map(function (sc) { return sc.getAttribute('data-screen') || '?'; });
+    chip('#' + id, '기본', base.join(', '), !cur.state || !stateEl);
+    var seen = {};
+    stateEls.forEach(function (el) {
+      var st = el.getAttribute('data-state');
+      if (seen[st]) return; seen[st] = true;
+      var sc = el.classList.contains('screen') ? el : el.closest('.screen');
+      chip('#' + id + '/' + st, el.getAttribute('data-label') || st,
+        (sc && sc.getAttribute('data-screen')) || '', cur.state === st && !!stateEl);
+    });
+    note.textContent = '';
+
+    var old = document.querySelector('.jm-end'); if (old) old.remove();
+    var end = (stateEl && stateEl.getAttribute('data-end')) || step.getAttribute('data-end');
+    if (end) {
+      var box = document.createElement('div');
+      box.className = 'jm-end';
+      box.textContent = '■ 이 갈래의 끝: ' + end;
+      step.appendChild(box);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function go(target) { if (location.hash.slice(1) === target) render(); else location.hash = target; }
+
+  document.addEventListener('click', function (e) {
+    var off = e.target.closest('[data-offpath]');
+    if (off) { e.preventDefault(); note.textContent = '↗ 여정 밖: ' + off.getAttribute('data-offpath') + ' — 이 여정 mockup에서는 열지 않습니다'; return; }
+    var el = e.target.closest('[data-go]');
+    if (el) { e.preventDefault(); go(el.getAttribute('data-go')); }
+  });
+  prev.addEventListener('click', function () { var i = parse().index; if (i > 0) go(ids[i - 1]); });
+  next.addEventListener('click', function () { var i = parse().index; if (i < ids.length - 1) go(ids[i + 1]); });
+  window.addEventListener('hashchange', render);
+  render();
+})();
+</script>
+</body>
+</html>

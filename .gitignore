@@ -1,0 +1,38 @@
+# OS·편집기 산출물
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+*~
+*.swp
+*.swo
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.code-workspace
+
+# 로그·임시
+*.log
+*.tmp
+.cache/
+
+# 비밀 값은 커밋하지 않는다 (보관 위치는 D-05 결정 후)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.keystore
+*.jks
+
+# python (저장소 스크립트용 — 앱 스택과 무관)
+__pycache__/
+*.py[cod]
+.venv/
+
+# 앱 스택 산출물(빌드 디렉터리·의존성 캐시 등)은 D-02 지원 OS 가 정해진 뒤
+# 그 스택에 맞는 항목을 여기 추가한다. 지금 미리 적으면 스택을 가정하는 셈이다.

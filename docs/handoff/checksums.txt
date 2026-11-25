@@ -1,0 +1,16 @@
+930b2014dffa34212da629feaae44ed6557310b0ac6ee161fd347bac7b9f3198  docs/README.md
+b8afde73cf0bf884b085b5577ae2fe99bf897c2ed91d6ce49dd32729e4613410  docs/decisions/open-questions.md
+03f78dec65ad4df73a7ea50a514f5d895e686a3244959c1e92603aaa67023df8  docs/handoff/bootstrap-requirements.md
+a2c9baa1bae9e3b8db8aaee0d99eea7634da41990c9d61e6de5dff13c513f67f  docs/journeys/JRN-gym-reservation/index.html
+e3eb16cadcd4dda580ac370d8ed076136b20b176848c1fe495f3df8142d13c15  docs/journeys/JRN-recipe-link-collect/index.html
+8ead3e958d61e36ae89b20bf7abd23234aefd73eea110ec1a21157d3b60921c2  docs/journeys/index.md
+be0712afe0d7b42ad22befd35831bcf72d45bb423905ac50a8f31a055677d8ef  docs/product/family-app-gym-recipes-doc-tracker/2026-11.md
+01144587cf17d3979260de4f794b0818c1200e11304235eb6a5a3c13cc7d1418  docs/product/family-app-gym-recipes-doc-tracker/index.md
+904a9bc501245b402232afb5ff041e8f05c1de2dcf2442ceeaa5c5158bb15d5b  docs/product/family-app-gym-recipes-prd-gym-reservation.md
+94f411a0d58b7df57059c0bccbf78ec8d090e45348c55059f88bc7d8a41ef282  docs/product/family-app-gym-recipes-prd-recipe-links.md
+04830aa55646471403e12783bec2d14dfe9b51c7939e76fc90cc139656580a09  docs/product/family-app-gym-recipes-test-gym-reservation.md
+09a75be5fe492ecda6e9613f1006beff0b0191d228fef1509fa6aa044550230e  docs/product/family-app-gym-recipes-test-recipe-links.md
+f751db79d468f023bb309861f18a079caa33fed2007bc822a98ac26d838e269f  docs/product/family-app-gym-recipes-values.md
+a99e7facb767da4f6e1465cff7fbe5d581eb249265da986dc69973fc4bf1b99e  docs/research/facility-and-link-findings.md
+6fa931d0f4b40e0f88ffc43cbefcfe0818e7f3d8647cfe0859ec4ddd66385c38  docs/user-journeys/JRN-gym-reservation.md
+a29136eb4d25e2d7f2d1cfe341a5b1034948d1c1b34fa61abb4cecbb3a550a0e  docs/user-journeys/JRN-recipe-link-collect.md

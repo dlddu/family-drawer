@@ -1,0 +1,18 @@
+# 줄바꿈은 LF 로 고정한다. 문서 17개가 SHA-256 으로 검증되므로(README 「검증을 돌린다」)
+# 체크아웃 환경마다 CRLF 로 바뀌면 그 해시가 깨진다. 현재 추적 파일에 CRLF 는 없다.
+* text=auto eol=lf
+
+# mockup 은 단일 정적 HTML 이다 — diff 를 그대로 본다.
+*.html text eol=lf diff=html
+*.md   text eol=lf
+*.py   text eol=lf diff=python
+*.yml  text eol=lf
+*.txt  text eol=lf
+
+# 바이너리(앞으로 스크린샷 등이 들어올 때)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.ico binary

@@ -1,0 +1,21 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_size = 4
+
+[*.md]
+# 마크다운에서 줄 끝 공백 2개는 줄바꿈 의미가 있다
+trim_trailing_whitespace = false
+
+# 체크섬 목록은 생성물이다 — 편집기가 손대지 않게 한다
+[docs/handoff/checksums.txt]
+trim_trailing_whitespace = false
+insert_final_newline = true
