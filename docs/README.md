@@ -20,10 +20,10 @@
 | 2 | [`product/family-app-gym-recipes-values.md`](./product/family-app-gym-recipes-values.md) | **최상위 문서.** 제품 목표·범위(안/밖)·**최상위 가치 3개**(편의성·직관적 UX·사용자 조작 없는 진단)와 하위 기준·제약, 가족 역할 정의 |
 | 3 | [`user-journeys/JRN-gym-reservation.md`](./user-journeys/JRN-gym-reservation.md) | 여정 ① 헬스 수강신청 (6단계, 분기 9건) |
 | 4 | [`user-journeys/JRN-recipe-link-collect.md`](./user-journeys/JRN-recipe-link-collect.md) | 여정 ② 레시피 링크 모으기 (5단계, 분기 11건) |
-| 5 | [`product/family-app-gym-recipes-prd-gym-reservation.md`](./product/family-app-gym-recipes-prd-gym-reservation.md) | PRD ① + AC-G1~G10 (테스트 가능한 수용 기준) |
-| 6 | [`product/family-app-gym-recipes-prd-recipe-links.md`](./product/family-app-gym-recipes-prd-recipe-links.md) | PRD ② + AC-R1~R10 + **사용자가 보는 피드백 문구표 10행** |
-| 7 | [`product/family-app-gym-recipes-test-gym-reservation.md`](./product/family-app-gym-recipes-test-gym-reservation.md) | 테스트 시나리오 ① TC-G1~G10 (13개) |
-| 8 | [`product/family-app-gym-recipes-test-recipe-links.md`](./product/family-app-gym-recipes-test-recipe-links.md) | 테스트 시나리오 ② TC-R1~R10 (12개, 링크 정규화 12행·오류 7행 데이터 주도) |
+| 5 | [`product/family-app-gym-recipes-prd-gym-reservation.md`](./product/family-app-gym-recipes-prd-gym-reservation.md) | PRD ① + AC-G1~G10 (테스트 가능한 수용 기준) + **AC-G11**(향후 검증, 1단계 미구현) |
+| 6 | [`product/family-app-gym-recipes-prd-recipe-links.md`](./product/family-app-gym-recipes-prd-recipe-links.md) | PRD ② + AC-R1~R10 + **사용자가 보는 피드백 문구표 10행** + **AC-R11**(향후 검증, 1단계 미구현) |
+| 7 | [`product/family-app-gym-recipes-test-gym-reservation.md`](./product/family-app-gym-recipes-test-gym-reservation.md) | 테스트 시나리오 ① TC-G1~G10 (13개) + TC-G11 (향후 검증, 미실행) |
+| 8 | [`product/family-app-gym-recipes-test-recipe-links.md`](./product/family-app-gym-recipes-test-recipe-links.md) | 테스트 시나리오 ② TC-R1~R10 (12개, 링크 정규화 12행·오류 7행 데이터 주도) + TC-R11 (향후 검증, 미실행) |
 | 9 | [`journeys/index.md`](./journeys/index.md) | 여정 mockup 인덱스 + 검사 결과 |
 | 10 | [`decisions/open-questions.md`](./decisions/open-questions.md) | 미결정 D-01~D-10. 각 항목의 임시 처리와 "정하는 데 필요한 것" |
 | 11 | [`handoff/bootstrap-requirements.md`](./handoff/bootstrap-requirements.md) | 뒤 세션 인계: 문서 받는 절차, 최소 부트스트랩 요구, 화면 인벤토리, 의도적 제외 |
@@ -56,15 +56,18 @@
 ```
 
 현재 끊어진 화살표는 **없다**. 다만 ① 가치 소유자가 미지정이라 "고아 가치" 위험이 열려 있고(D-08),
-② 가치 ③의 **B군 하위 기준**(상관 ID·오류율·반복 실패 감지)은 1단계 PRD 에 AC 가 없다 — 둘 다 상태 추적 문서에 기록돼 있다.
+② 가치 ③의 **B군 하위 기준**(묶음·반복 실패 감지)은 `AC-G11`·`AC-R11` 에 **향후 검증 기대 결과로만** 적혀 있고 1단계에서 구현·검증하지 않는다 — 둘 다 상태 추적 문서에 기록돼 있다.
 
-## 핵심 설계 결정 두 가지
+## 핵심 설계 결정
 
 1. **자동 예약은 1단계 범위 밖이다 (범위 0).**
    공식 API 근거를 찾지 못했고 약관의 자동화 조항을 확인하지 못했다. `robots.txt` 가 `Allow: /` 인 것은 공개 페이지 크롤링 규칙일 뿐 **로그인 후 신청 자동화 허가가 아니다.**
    앱은 ①접수 기간 알림 ②사전 준비 체크 ③공식 경로 딥링크 ④결과 수동 기록까지만 한다. 바꾸려면 운영기관 확인(D-01)이 먼저다.
 
-2. **지원 OS·인프라는 확정하지 않았다.**
+2. **최상위 가치는 ① 사용자 편의성이 최우선이다.**
+   "신청·결제는 공식 사이트에서 일어난다"는 것은 가치가 아니라 **현 단계의 기능 범위**다 (자동 예약·앱 내 결제는 범위 밖, D-01). 별도의 최상위 가치로 세우지 않는다.
+
+3. **지원 OS·인프라는 확정하지 않았다.**
    플랫폼 의존 AC 는 OS 중립 문장으로 쓰고 `[OS 결정 대기]` 로 표시했다. 가족 공유는 1단계에서 "로컬 + 내보내기"로 축소했고, 그 한계를 화면 문구로 드러내게 설계했다 (D-02, D-03, D-04).
 
 ## 저장 위치
