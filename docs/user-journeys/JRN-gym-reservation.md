@@ -6,10 +6,10 @@
 |---|---|
 | 여정 식별자 | `JRN-gym-reservation` |
 | 여정명 | 부천도시공사 헬스 수강신청 제때 끝내기 |
-| 상태 | 초안 (v0.1) |
+| 상태 | 초안 (v0.2) |
 | 담당자 | 미지정 |
 | 최종 수정일 | 2026-11-25 |
-| 달성 가치 | `VAL-dont-miss-window` · `VAL-official-path-only` · `VAL-says-what-it-did` · `VAL-family-not-solo` · `VAL-findable-later` |
+| 달성 가치 | `VAL-least-effort` (①-2·①-3·①-4·①-5, 제약 ①-C1) · `VAL-obvious-to-everyone` (②-2·②-3·②-5) · `VAL-diagnosable-without-the-user` (③-A1~③-A4) |
 | 연결 문서 | PRD [`family-app-gym-recipes-prd-gym-reservation.md`](../product/family-app-gym-recipes-prd-gym-reservation.md) · 테스트 [`family-app-gym-recipes-test-gym-reservation.md`](../product/family-app-gym-recipes-test-gym-reservation.md) · mockup `JRN-gym-reservation` |
 
 ## 1. 서비스 개요 (참고)
@@ -125,3 +125,4 @@
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |---|---|---|---|
 | v0.1 | 2026-11-25 | 최초 작성. 6단계, 분기 9건. "예약"이 아니라 "수강신청" 체계라는 확인 사실을 반영 | Claude (Opus 5) 세션 |
+| v0.2 | 2026-11-25 | 가치 문서 v0.2 에 맞춰 `달성 가치` 를 새 ID 로 교체. **단계 식별자·순서·분기·지표는 변경 없음** | Claude (Opus 5) 세션 |

@@ -1,6 +1,6 @@
 # PRD: 유튜브 공유로 모으는 엄마의 레시피 보관함
 
-> 상태: **초안 (v0.1)** · 최종 수정일 2026-11-25
+> 상태: **초안 (v0.2)** · 최종 수정일 2026-11-25
 > 상위 문서: [`family-app-gym-recipes-values.md`](./family-app-gym-recipes-values.md)
 > 사실 근거: [`../research/facility-and-link-findings.md`](../research/facility-and-link-findings.md) (B 절)
 > 여정: [`../user-journeys/JRN-recipe-link-collect.md`](../user-journeys/JRN-recipe-link-collect.md)
@@ -22,10 +22,9 @@
 
 | 가치 | 기여 방식 |
 |---|---|
-| `VAL-three-tap-keep` | 공유 → 앱 선택 → 저장. 필수 입력 없음 |
-| `VAL-findable-later` | videoId + 시작시간을 보존해 원본을 그 지점부터 다시 연다 |
-| `VAL-says-what-it-did` | 저장됨/이미 있음/저장 못 함/제목 못 가져옴을 전부 화면 문구로 알린다 |
-| `VAL-family-not-solo` | 누가 공유했는지 라벨로 남는다 |
+| `VAL-least-effort` | 공유 → 앱 선택 → 저장 3탭, 필수 입력 0(①-1). videoId·시작시간을 보존해 원본을 그 지점부터 다시 열고 중복을 쌓지 않으며(①-4), 누가 공유했는지가 남아 다시 묻지 않는다(①-5). 잘못된 링크·오프라인에서도 받은 내용을 잃지 않는다(①-3) |
+| `VAL-obvious-to-everyone` | 저장됨/이미 있음/저장 못 함/제목 못 가져옴을 §5 문구표로 가족이 쓰는 말로 알리고(②-1·②-4), 빈 보관함과 결과 0건을 다른 문구로 구분하며(②-6), 볼 수 없는 영상에도 다음 행동을 남긴다(②-5) |
+| `VAL-diagnosable-without-the-user` | "유튜브 아님 / 영상 ID 추출 실패 / 제목 조회 실패 / 오프라인 / 삭제·비공개"를 각각 다른 유형으로 구분하고(③-A1), 받은 원문을 보존하며(③-A3), 제목을 지어내지 않고(③-A2), 이탈해도 받은 링크를 잃지 않는다(③-A4). **B군(상관 ID·오류율·반복 실패 감지)은 이 PRD 의 범위 밖이다** |
 
 ## 3. 범위
 
@@ -71,54 +70,54 @@
 
 ### `AC-R1` 유튜브 공유 시트에서 이 앱이 보이고 공유를 받는다
 - **설명**: 유튜브 앱의 공유에서 이 앱이 대상으로 노출되고, 선택하면 앱이 전면에 뜨며 **저장 확인 화면**이 바로 보인다. 공유로 들어온 경우 로그인·온보딩을 요구하지 않는다.
-- **달성 가치**: `VAL-three-tap-keep`
+- **달성 가치**: `VAL-least-effort` ①-1 (필수 입력 0, 탭 3회 이내)
 - **검증 방법**: 유튜브 앱 → 공유 → 목록에 앱 표시 → 선택 → 저장 확인 화면 도달. 탭 수를 세어 **공유 탭 1 + 앱 선택 1 + 저장 1 = 3회 이내**
 - **의존**: D-02(지원 OS). 수신 방식(Android `ACTION_SEND` / iOS Share Extension)은 OS 결정 후 확정 → `[OS 결정 대기]`
 
 ### `AC-R2` 문자열에서 유튜브 링크를 찾아 videoId·시작시간으로 정규화한다
 - **설명**: 공유 payload 는 URL 단독이 아니라 **"영상 제목 + 줄바꿈 + URL"** 같은 문자열일 수 있다(가정 B-2-1). 따라서 입력은 문자열로 받고, 그 안에서 첫 번째 유튜브 링크를 찾아 §4 표대로 `videoId`(11자)와 `startSeconds`(없으면 null)를 뽑는다. `si`·`list`·`index`·`feature` 등 부가 파라미터는 버린다. 정규 링크는 `https://www.youtube.com/watch?v=<id>` 로 통일해 저장한다.
-- **달성 가치**: `VAL-findable-later`
+- **달성 가치**: `VAL-least-effort` ①-3·①-4 (받은 문자열을 잃지 않고, 다시 열 수 있게 보존)
 - **검증 방법**: §4 표의 9개 형태 + "제목\n링크" 혼합 문자열 + 앞뒤 공백·한글 섞인 문자열 각각에 대해 추출 결과가 기대값과 일치 (테스트 문서 TC-R2)
 
 ### `AC-R3` 같은 영상은 두 번 쌓이지 않는다
 - **설명**: 중복 판정은 **URL 문자열이 아니라 videoId** 로 한다. 이미 있는 videoId 면 새 항목을 만들지 않고, 저장 화면에 중복 배너(§5)와 두 버튼을 보여준다. `기존 항목 보기` → 그 항목 상세로 이동. `메모만 추가` → 기존 항목의 메모에 새 내용을 덧붙인다. 시작시간이 다른 같은 영상도 **중복**이며, 새 시작시간은 기존 항목의 "표시 구간"으로 추가 제안한다.
-- **달성 가치**: `VAL-findable-later`, `VAL-says-what-it-did`
+- **달성 가치**: `VAL-least-effort` ①-4 · `VAL-obvious-to-everyone` ②-4
 - **검증 방법**: `watch?v=X` 저장 후 `youtu.be/X?si=...` 공유 → 항목 수 증가 0, 중복 배너 표시. `youtu.be/X?t=120` 공유 → 중복 배너 + 시작시간 추가 제안
 
 ### `AC-R4` 잘못된 링크는 조용히 버리지 않는다
 - **설명**: 두 경우를 구분해 처리한다. ① **유튜브가 아닌 링크/링크 없는 텍스트** → "유튜브 영상 링크를 찾지 못했어요" + `받은 내용 그대로 메모로 저장` 제공. ② **유튜브 도메인이지만 videoId 추출 실패**(잘린 링크, 11자가 아닌 id, 채널/검색 URL) → "링크가 중간에 끊긴 것 같아요" + 받은 원문 전체를 화면에 보여주고 `원문 그대로 저장` 제공. 두 경우 모두 **원문을 잃지 않는다.**
-- **달성 가치**: `VAL-says-what-it-did`
+- **달성 가치**: `VAL-diagnosable-without-the-user` ③-A1·③-A3 · `VAL-obvious-to-everyone` ②-6
 - **검증 방법**: 입력별 판정 — `https://naver.com` → ①, `https://www.youtube.com/@channel` → ②, `https://youtu.be/abc` (3자) → ②, `그냥 텍스트` → ①. 각 경우 원문이 화면에 그대로 보이고 저장 시 보존됨
 
 ### `AC-R5` 원본을 그 지점부터 다시 연다
 - **설명**: 항목 상세의 `원본 보기` 를 누르면 유튜브 앱으로 해당 영상이 열리고, `startSeconds` 가 있으면 그 지점부터 시작한다. 유튜브 앱이 없거나 열기에 실패하면 브라우저로 열고, §5 의 토스트를 보여준다.
-- **달성 가치**: `VAL-findable-later`, `VAL-says-what-it-did`
+- **달성 가치**: `VAL-least-effort` ①-4 · `VAL-obvious-to-everyone` ②-4
 - **검증 방법**: start=90 항목 → 90초 지점에서 시작. 유튜브 앱 제거(또는 핸들러 차단) 상태 → 브라우저로 열리고 토스트 표시
 
 ### `AC-R6` 볼 수 없는 영상은 상태로 알리고 사용자가 쓴 내용은 지킨다
 - **설명**: 영상이 삭제·비공개가 된 항목은 상세에 상태 배지(§5)를 보여준다. **사용자가 쓴 제목·메모·태그는 그대로 유지**하고, `링크 수정` 과 `삭제` 두 경로를 제공한다. 상태 판정 방법은 D-05 에 의존하므로, 판정이 불가능한 동안에는 `원본 보기` 실패 시점에 배지를 붙인다.
-- **달성 가치**: `VAL-findable-later`, `VAL-says-what-it-did`
+- **달성 가치**: `VAL-diagnosable-without-the-user` ③-A1 · `VAL-obvious-to-everyone` ②-2·②-5
 - **검증 방법**: 존재하지 않는 videoId 로 항목을 만들고 `원본 보기` → 실패 후 배지 표시, 메모 내용 보존 확인, 두 버튼 동작 확인
 
 ### `AC-R7` 피드백 문구는 §5 표를 그대로 쓴다
 - **설명**: §5 의 10개 상황 전부에 대해 표에 적힌 **표시 방식과 문구**가 화면에 나온다. 표에 없는 상황을 임의 문구로 처리하지 않는다(표를 먼저 고친다).
-- **달성 가치**: `VAL-says-what-it-did`
+- **달성 가치**: `VAL-obvious-to-everyone` ②-1·②-4·②-6 · `VAL-diagnosable-without-the-user` ③-A1
 - **검증 방법**: 10개 상황을 각각 재현해 문구·표시 방식 일치 확인 (테스트 문서 TC-R7)
 
 ### `AC-R8` 보관함에서 찾을 수 있다
 - **설명**: 보관함은 최근 저장순 목록이고, 제목·메모 텍스트 검색과 태그 필터를 제공한다. 필터가 걸린 상태는 칩/배지로 보이고, 결과 0건과 항목 0건은 **서로 다른 문구**(§5)로 구분한다.
-- **달성 가치**: `VAL-findable-later`
+- **달성 가치**: `VAL-obvious-to-everyone` ②-2·②-6 · `VAL-least-effort` ①-4
 - **검증 방법**: 항목 0개 → 빈 상태 문구. 항목 있고 매칭 0 → 결과 0건 문구 + `필터 지우기`. 필터 적용 시 적용 칩 표시
 
 ### `AC-R9` 제목이 없어도 저장은 성립한다
 - **설명**: 제목·썸네일 조회가 실패하거나 오프라인이어도 **링크 저장은 성공**한다. 제목 칸은 "제목 없음"으로 남고 §5 의 안내가 인라인으로 보이며, 나중에 `제목 다시 불러오기` 를 누를 수 있다. 저장 성공 여부가 네트워크에 의존하지 않는다.
-- **달성 가치**: `VAL-three-tap-keep`, `VAL-says-what-it-did`
+- **달성 가치**: `VAL-least-effort` ①-3 · `VAL-diagnosable-without-the-user` ③-A2·③-A4
 - **검증 방법**: 네트워크 차단 상태로 공유 → 저장 성공 토스트(오프라인 문구), 목록에 항목 존재, 복구 후 `제목 다시 불러오기` 동작
 - **의존**: D-05(제목 조회 방법). 미결정이므로 **1단계는 "제목 없음 + 사용자 직접 입력"이 기본 동작**이고 자동 조회는 선택 기능이다
 
 ### `AC-R10` 누가 공유했는지 남는다 (1단계 한정 보장)
 - **설명**: 항목에는 공유자 라벨(예: `엄마`)이 붙고 라벨로 필터할 수 있다. 라벨은 저장 시 기본값이 현재 기기 사용자이며 수정할 수 있다. 1단계에서는 기기 간 동기화를 보장하지 않고, 보관함 전체 **내보내기**를 제공한다.
-- **달성 가치**: `VAL-family-not-solo`
+- **달성 가치**: `VAL-least-effort` ①-5 · 제약 ①-C2 (동기화 미약속)
 - **검증 방법**: 라벨 2종 이상 생성 → 필터 동작. 내보내기 결과에 모든 항목의 링크·제목·메모·태그·라벨 포함
 - **의존**: D-03, D-07
 
@@ -126,18 +125,18 @@
 
 ## 7. AC ↔ 가치 ↔ 여정 단계 대응
 
-| AC | 달성 가치 | 여정 단계 |
+| AC | 달성 가치 (하위 기준) | 여정 단계 |
 |---|---|---|
-| AC-R1 | `VAL-three-tap-keep` | `STP-share-from-youtube` |
-| AC-R2 | `VAL-findable-later` | `STP-confirm-save` |
-| AC-R3 | `VAL-findable-later`, `VAL-says-what-it-did` | `STP-confirm-save` |
-| AC-R4 | `VAL-says-what-it-did` | `STP-confirm-save` |
-| AC-R5 | `VAL-findable-later`, `VAL-says-what-it-did` | `STP-open-original` |
-| AC-R6 | `VAL-findable-later`, `VAL-says-what-it-did` | `STP-open-original`, `STP-fix-entry` |
-| AC-R7 | `VAL-says-what-it-did` | 전 단계 |
-| AC-R8 | `VAL-findable-later` | `STP-browse-collection` |
-| AC-R9 | `VAL-three-tap-keep`, `VAL-says-what-it-did` | `STP-confirm-save` |
-| AC-R10 | `VAL-family-not-solo` | `STP-browse-collection` |
+| AC-R1 | `VAL-least-effort` (①-1) | `STP-share-from-youtube` |
+| AC-R2 | `VAL-least-effort` (①-3·①-4) | `STP-confirm-save` |
+| AC-R3 | `VAL-least-effort` (①-4), `VAL-obvious-to-everyone` (②-4) | `STP-confirm-save` |
+| AC-R4 | `VAL-diagnosable-without-the-user` (③-A1·③-A3), `VAL-obvious-to-everyone` (②-6) | `STP-confirm-save` |
+| AC-R5 | `VAL-least-effort` (①-4), `VAL-obvious-to-everyone` (②-4) | `STP-open-original` |
+| AC-R6 | `VAL-diagnosable-without-the-user` (③-A1), `VAL-obvious-to-everyone` (②-2·②-5) | `STP-open-original`, `STP-fix-entry` |
+| AC-R7 | `VAL-obvious-to-everyone` (②-1·②-4·②-6), `VAL-diagnosable-without-the-user` (③-A1) | 전 단계 |
+| AC-R8 | `VAL-obvious-to-everyone` (②-2·②-6), `VAL-least-effort` (①-4) | `STP-browse-collection` |
+| AC-R9 | `VAL-least-effort` (①-3), `VAL-diagnosable-without-the-user` (③-A2·③-A4) | `STP-confirm-save` |
+| AC-R10 | `VAL-least-effort` (①-5·①-C2) | `STP-browse-collection` |
 
 ## 8. 미결정이 이 PRD 를 흔드는 지점
 
@@ -153,3 +152,4 @@
 | 버전 | 날짜 | 변경 내용 |
 |---|---|---|
 | v0.1 | 2026-11-25 | 최초 작성. AC 10개, 피드백 문구표 10행 |
+| v0.2 | 2026-11-25 | 가치 문서 v0.2(최상위 가치 3개)에 맞춰 §2·§7 과 각 AC 의 `달성 가치` 를 새 ID·하위 기준으로 교체. **AC 식별자·문구표·검증 방법·범위·결정은 변경 없음** |
