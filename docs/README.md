@@ -17,7 +17,8 @@
 | # | 문서 | 무엇이 들어 있나 |
 |---|---|---|
 | 1 | [`research/facility-and-link-findings.md`](./research/facility-and-link-findings.md) | 사실 근거. 시설·인증·공식 예약 경로·자동화 가능 범위, YouTube 링크 형태. **확인/가정 구분 + 출처 URL + 확인일** |
-| 2 | [`product/family-app-gym-recipes-values.md`](./product/family-app-gym-recipes-values.md) | **최상위 문서.** 제품 목표·범위(안/밖)·**최상위 가치 3개**(편의성·직관적 UX·사용자 조작 없는 진단)와 하위 기준·제약, 가족 역할 정의 |
+| 2 | [`product/family-app-gym-recipes-values.md`](./product/family-app-gym-recipes-values.md) | **최상위 문서 (본문).** 제품 소유자 + **최상위 가치 3개**(편의성·직관적 UX·사용자 조작 없는 진단)의 유형·설명까지만 |
+| 2-부록 | [`product/family-app-gym-recipes-values-appendix.md`](./product/family-app-gym-recipes-values-appendix.md) | 가치 **상세 기준**(하위 기준·제약) · 대상 사용자(가족 역할) · 제품 목표 · 제품 범위(안/밖) · 가치↔요구 대응 · **가치 이동 표**(v0.1 의 6개가 어디로 갔는지) |
 | 3 | [`user-journeys/JRN-gym-reservation.md`](./user-journeys/JRN-gym-reservation.md) | 여정 ① 헬스 수강신청 (6단계, 분기 9건) |
 | 4 | [`user-journeys/JRN-recipe-link-collect.md`](./user-journeys/JRN-recipe-link-collect.md) | 여정 ② 레시피 링크 모으기 (5단계, 분기 11건) |
 | 5 | [`product/family-app-gym-recipes-prd-gym-reservation.md`](./product/family-app-gym-recipes-prd-gym-reservation.md) | PRD ① + AC-G1~G10 (테스트 가능한 수용 기준) + **AC-G11**(향후 검증, 1단계 미구현) |
@@ -44,7 +45,8 @@
 사실 근거 (research/)                     ← 모든 "확인" 주장의 출처
    │
    ▼
-가치 문서 (values)  ──── VAL-* ─────┐
+가치 문서 (values, 본문)  ── VAL-* ──┐
+   │   └─ 부록 (values-appendix): 하위 기준·범위·이동 표
    │                                │
    ├─► 여정 (JRN-*, STP-*) ─────────┤     ← 여정은 가치를 달성하는 흐름
    │        │                       │

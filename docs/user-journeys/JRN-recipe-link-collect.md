@@ -15,7 +15,7 @@
 ## 1. 서비스 개요 (참고)
 
 **family-app-gym-recipes** — 가족이 "놓치면 다시 하기 번거로운 일"을 놓치지 않게 돕는 가족용 앱.
-제품 개요·가치·범위는 [`family-app-gym-recipes-values.md`](../product/family-app-gym-recipes-values.md) 참조.
+제품 가치는 [`family-app-gym-recipes-values.md`](../product/family-app-gym-recipes-values.md), 제품 목표·범위와 가치 하위 기준은 [부록](../product/family-app-gym-recipes-values-appendix.md) 참조.
 
 이 여정은 **유튜브 앱의 공유 시트가 입구**다. 앱 안에서 영상을 검색하는 흐름이 아니다.
 

@@ -3,7 +3,7 @@
 > 상태: **초안 (v0.2)** · 최종 수정일 2026-11-25
 > 검증 대상 PRD: [`family-app-gym-recipes-prd-recipe-links.md`](./family-app-gym-recipes-prd-recipe-links.md)
 > 여정: [`../user-journeys/JRN-recipe-link-collect.md`](../user-journeys/JRN-recipe-link-collect.md)
-> 상위 가치: [`family-app-gym-recipes-values.md`](./family-app-gym-recipes-values.md)
+> 상위 가치: [`family-app-gym-recipes-values.md`](./family-app-gym-recipes-values.md) · 상세 기준은 [부록](./family-app-gym-recipes-values-appendix.md)
 
 ---
 
@@ -148,7 +148,7 @@ AC-R2 규칙만으로 구현한 참조 구현에 넣어 돌렸고 **20/20 행이
   - ㉠ **앱 버전**, **실패한 화면·작업 단계**(`save-confirm` / `STP-confirm-save`), **실패 유형**(유튜브 링크 아님 / 영상 ID 추출 실패 / 제목 조회 실패 / 오프라인 / 원본 열기 실패) 세 항목이 **서로 구분 가능**하다
   - ㉡ 두 번의 실패가 각각 **상관 ID** 로 묶여 한 시도씩 식별된다
   - ㉢ **연속 2회 실패**라는 사실이 사용자 신고 없이 드러난다
-  - ㉣ 진단 맥락에 **저장한 링크·영상 제목·메모 본문·태그·공유자 라벨이 없다** (가치 문서 ③-C1)
+  - ㉣ 진단 맥락에 **저장한 링크·영상 제목·메모 본문·태그·공유자 라벨이 없다** (가치 문서 부록 [§E-3 ③-C1](./family-app-gym-recipes-values-appendix.md#e-3-val-diagnosable-without-the-user--사용자가-설명하지-않아도-진단된다))
   - ㉤ 사용자가 추가로 한 조작이 **0회**다 (③-C2)
 - **검증 AC**: AC-R11
 - **지금 하지 않는 이유**: 수단을 정하는 것은 이 PRD·테스트의 몫이 아니다. 모니터링 SDK 도입이나 개인정보 수집 범위는 여기서 결정하지 않는다 (D-02·D-03).

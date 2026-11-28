@@ -15,7 +15,7 @@
 ## 1. 서비스 개요 (참고)
 
 **family-app-gym-recipes** — 가족이 "놓치면 다시 하기 번거로운 일"을 놓치지 않게 돕는 가족용 앱.
-제품 개요·가치·범위는 [`family-app-gym-recipes-values.md`](../product/family-app-gym-recipes-values.md) 참조.
+제품 가치는 [`family-app-gym-recipes-values.md`](../product/family-app-gym-recipes-values.md), 제품 목표·범위와 가치 하위 기준은 [부록](../product/family-app-gym-recipes-values-appendix.md) 참조.
 
 이 여정에서 앱이 하는 일은 넷이다: 접수 기간 알려주기 · 준비물 확인 · 공식 신청 페이지로 보내기 · 결과 기록.
 **신청과 결제는 앱이 하지 않는다**(확인/가정 구분은 사실 근거 문서 A-6 절).
